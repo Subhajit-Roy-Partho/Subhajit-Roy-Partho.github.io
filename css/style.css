@@ -1,0 +1,9 @@
+.jumbotron {
+    background-image: url("../docs/pic/profile_pic.jpg");
+    background-size: cover;
+    height: 100vh;
+}
+
+/* #mid {
+
+} */
