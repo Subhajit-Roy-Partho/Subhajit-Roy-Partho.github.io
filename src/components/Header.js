@@ -3,6 +3,7 @@ import {AppBar, Collapse, IconButton, makeStyles, Toolbar} from "@material-ui/co
 import SortIcon from "@material-ui/icons/Sort"
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import "./Header.css";
+import {Link as Scroll} from "react-scroll";
 
 const useStyles = makeStyles((theme)=>({
     root :{
@@ -50,7 +51,7 @@ export default function Header() {
     const [checked,setChecked] = useState(false);
     const classes = useStyles();
     return(
-        <div className={classes.root}>
+        <div className={classes.root} id ="header">
             <AppBar className={classes.appbar} elevation={0}>
                 <Toolbar className={classes.appbarToolbar}>
                 <h1 className={classes.appbarTitle}><span style={{fontFamily: "Lobster", fontSize:"1.5rem"}}>My <span className={classes.textColor}>Page</span></span></h1>
@@ -64,9 +65,12 @@ export default function Header() {
                     <h1 className={classes.text2}>
                         Welcome to<br/>My <span className={classes.textColor}>Website</span>
                     </h1>
-                    <IconButton>
-                        <ExpandMoreIcon className={classes.iconDown} />
-                    </IconButton>
+                    <Scroll to="place-to-visit" smooth={true}>
+
+                        <IconButton>
+                            <ExpandMoreIcon className={classes.iconDown} />
+                        </IconButton>
+                    </Scroll>
                 </div>
             </Collapse>
         </div>
