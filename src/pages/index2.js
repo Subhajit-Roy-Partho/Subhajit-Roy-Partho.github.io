@@ -3,6 +3,7 @@ import {CssBaseline, makeStyles} from "@material-ui/core";
 import React from "react";
 import Header from '../components/Header';
 import Image from '../../public/storage/pics/back1.jpg';
+import ComponentTwo from "../components/ComponentTwo";
 
 
 const useStyles = makeStyles((theme)=>({
@@ -21,6 +22,7 @@ const useStyles = makeStyles((theme)=>({
       <div className={classes.root}>
         <CssBaseline />
         <Header/>
+        <ComponentTwo />
       </div>
     );
   }

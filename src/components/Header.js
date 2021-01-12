@@ -14,6 +14,7 @@ const useStyles = makeStyles((theme)=>({
         fontFamily: 'Lobster'
     },
     appbar :{
+        paddingTop: "3rem",
         background: 'none',
         fontFamily: 'Lobster',
 
