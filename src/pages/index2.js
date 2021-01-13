@@ -1,30 +1,22 @@
+import React from "react"
+import { Link } from "gatsby"
 
-import {CssBaseline, makeStyles} from "@material-ui/core";
-import React from "react";
-import Header from '../components/Header';
-import Image from '../../public/storage/pics/back1.jpg';
-import ComponentTwo from "../components/ComponentTwo";
+import Layout from "../components/layout"
+import Image from "../components/image"
+import SEO from "../components/seo"
 
+const IndexPage = () => (
+  <Layout>
+    <SEO title="Home" />
+    <h1>Hi people</h1>
+    <p>Welcome to your new Gatsby site.</p>
+    <p>Now go build something great.</p>
+    <div style={{ maxWidth: `300px`, marginBottom: `1.45rem` }}>
+      <Image />
+    </div>
+    <Link to="/page-2/">Go to page 2</Link> <br />
+    <Link to="/using-typescript/">Go to "Using TypeScript"</Link>
+  </Layout>
+)
 
-const useStyles = makeStyles((theme)=>({
-    root:{
-      minHeight: '100vh',
-      backgroundImage: `url(${Image})`,
-      backgroundRepeat:"no-repeat",
-      backgroundSize: "cover",
-    }
-  }));
-
-
-  function App() {
-    const classes = useStyles()
-    return (
-      <div className={classes.root}>
-        <CssBaseline />
-        <Header/>
-        <ComponentTwo />
-      </div>
-    );
-  }
-  
-  export default App;
+export default IndexPage
