@@ -24,6 +24,11 @@ const useStyle = makeStyles((theme)=>({
     },
     submitButton:{
         paddingBottom:"3vh"
+    },
+    contain:{
+        [theme.breakpoints.down("md")]:{
+            overflowY: "scroll"
+        }
     }
 },
 }))
@@ -59,7 +64,7 @@ export default function Auth(){
     return(
         <BackgroundImage fluid={ImageData} style={{minHeight: "100vh", maxHeight:"100vh", backgroundSize: "cover", backgroundRepeat: "no-repeat", alignItems: 'center', flexDirection:"row"}}>
             <div style={{display: 'flex', alignItems: 'center', backgroundColor: "transparent", height: "100vh", paddingTop:"3%", paddingLeft:"3%", paddingBottom:"3%"}}>
-                <div style={{display: 'flex', backgroundColor: "white", height:"100%", width: "100%", borderRadius: "1.5%", padding: "3%", flexShrink:"20", justifyContent:"center", alignItems:"center", flexDirection:"column", overflowY:"scroll"}}>
+                <div style={{display: 'flex', backgroundColor: "white", height:"100%", width: "100%", borderRadius: "1.5%", padding: "3%", flexShrink:"20", justifyContent:"center", alignItems:"center", flexDirection:"column"}} className={classes.contain}>
                     <div style={{display:'flex', flexDirection:"column"}}>
                         <h3 style={{paddingBottom:"5vh"}}>Login with your Email</h3>
                         <h6>Email</h6>
