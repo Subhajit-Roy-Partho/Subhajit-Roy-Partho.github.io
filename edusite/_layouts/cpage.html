@@ -1,0 +1,20 @@
+---
+layout: default
+---
+
+{{ content }}
+<hr>
+<div class="d-flex flex-lg-row pl-10 pr-10">
+
+<div class="pr-10">
+	{% if page.prevLink != page.prevLink.blank %}
+	<a href="{{site.url}}{{ page.prevLink }}" class="btn btn-secondary" role="button" data-bs-toggle="button">Previous Page</a>
+	{% endif %}
+</div>
+
+<div class="ms-auto pl-10">
+	{% if page.nextLink != page.nextLink.blank %}
+	<a href="{{site.url}}{{ page.nextLink }}" class="btn btn-primary" role="button" data-bs-toggle="button">Next Page</a>
+	{% endif %}
+</div>
+</div>
