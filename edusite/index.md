@@ -2,7 +2,6 @@
 layout: default
 title: Home
 nav_order: 01
-permalink: "/"
 nav_exclude: false
 ---
 
