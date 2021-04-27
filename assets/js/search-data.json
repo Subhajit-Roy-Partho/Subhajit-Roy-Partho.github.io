@@ -1,0 +1,26 @@
+{"0": {
+    "doc": "About",
+    "title": "About",
+    "content": "# This is about page ",
+    "url": "/about/",
+    "relUrl": "/about/"
+  },"1": {
+    "doc": "CUDA GPU computation with Nvdia Graphics Card",
+    "title": "CUDA GPU computation with Nvdia Graphics Card",
+    "content": "# This is the Introduction Page ",
+    "url": "/Courses/CUDA/",
+    "relUrl": "/Courses/CUDA/"
+  },"2": {
+    "doc": "Home",
+    "title": "Home",
+    "content": "# This is the index page. ",
+    "url": "/",
+    "relUrl": "/"
+  },"3": {
+    "doc": "Basics",
+    "title": "Basics",
+    "content": "# This is a sub page ",
+    "url": "/Courses/CUDA/page1.html",
+    "relUrl": "/Courses/CUDA/page1.html"
+  }
+}
