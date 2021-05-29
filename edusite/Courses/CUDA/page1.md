@@ -9,4 +9,6 @@ nextLink: "/home"
 
 # This is a sub page
 
+#### Testing mathajax
 
+$$E = mc^2$$
