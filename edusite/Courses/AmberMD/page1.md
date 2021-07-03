@@ -17,12 +17,19 @@ For this tutorial we will be working with RvSAHS4 (5z4g).
 
 ```
 source leaprc.protein.ff14SB
+source leaprc.water.tip3p
 set default PBRadii mbondi3
-x = loadPDB protein.pdb
-saveAmberParm x protein.parm7 protein.rst7
+foo = loadPDB protein.pdb
+solvatebox foo TIP3PBOX 10.0
+addions foo Cl- 0
+addions foo Na+	0
+savepdb foo proteinSolv.pdb
+saveamberparm foo protein.parm7 protein.rst7
+quit
 ```
 
 - ff14SB amber force filed is used.
+- 
 - mbondi3 is part of the force-field.
 - Loading the pdb file of the protein.
 - saving the parameter of the pdb file.
