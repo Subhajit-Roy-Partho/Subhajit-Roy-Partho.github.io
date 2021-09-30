@@ -1,0 +1,22 @@
+@media print {
+    .pdf-container {
+      display: none;
+    }
+  }
+
+.nextButton{
+  margin-right: auto;
+  text-align: auto;
+}
+
+.prevButton{
+
+  text-align: auto;
+  margin-left: auto ;
+}
+
+.buttonLast{
+  padding-right: 30%;
+  padding-right: 30%;
+  text-align: center
+}

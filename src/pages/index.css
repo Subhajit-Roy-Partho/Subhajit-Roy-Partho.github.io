@@ -1,0 +1,47 @@
+.carousel {
+    height:100%;
+    margin: auto;
+    max-height: 100vh;
+    width: auto;
+  }
+
+.image{
+    height:100vh;
+    max-height: 100vh;
+    vertical-align: middle;
+    object-fit: contain;
+}
+.body{
+  margin: 0em;
+}
+
+.btn-grad {background-image: linear-gradient(to right, #314755 0%, #26a0da  51%, #314755  100%)}
+.btn-grad {
+   /* margin: 10px; */
+   /* padding: 15px 45px; */
+   height: 10vh;
+   width: 30vh;
+   text-align: center;
+   text-transform: uppercase;
+   transition: 0.5s;
+   background-size: 200% auto;
+   color: white;            
+   box-shadow: 1vh 1vh 1vh #26a0da;
+   border-radius: 10vh;
+   display: block;
+   align-items: center;
+   border-color: transparent;
+ }
+
+ .btn-grad:hover {
+   background-position: right center; /* change the direction of the change here */
+   color: #fff;
+   text-decoration: none;
+ }
+.wave{
+  position: absolute;
+  top:80vh;
+  width: auto;
+  background-color: transparent;
+  height: 20vh;
+}
