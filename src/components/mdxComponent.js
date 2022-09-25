@@ -28,3 +28,12 @@ export function BoxHighlight({input}){
         </Box>
     );
 }
+
+
+/// BoxHighlight Usage:
+/* const input={
+    text: "Something",
+    color: "red"
+  }
+<BoxHighlight input={input}/>
+<BoxHighlight input="This is nice"/> */

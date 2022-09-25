@@ -3,7 +3,7 @@ import { BoxHighlight } from "../components/mdxComponent";
 
 const input={
   text: "Something",
-  // color: "red"
+  color: "red"
 }
 const pageStyles = {
   color: "#232129",
