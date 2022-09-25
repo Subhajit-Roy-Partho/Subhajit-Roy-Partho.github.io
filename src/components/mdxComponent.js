@@ -1,6 +1,10 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 
+
+
+/////////////////////////////////////////////////////////////////////////
+
 export function BoxHighlight({input}){
     var color="#DEEBFF";
     var text;
@@ -31,9 +35,13 @@ export function BoxHighlight({input}){
 
 
 /// BoxHighlight Usage:
+
 /* const input={
     text: "Something",
     color: "red"
   }
 <BoxHighlight input={input}/>
 <BoxHighlight input="This is nice"/> */
+
+///////////////////////////////////////////////////////////////////////////////////
+
