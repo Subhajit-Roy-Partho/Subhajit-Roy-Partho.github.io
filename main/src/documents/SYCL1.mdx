@@ -1,5 +1,30 @@
-```cpp
+```c++
 
-#include
+// This is executed using intel SYCL compiler.
+// With other compiler execution style might be different.
+
+
+#include <CL/sycl.hpp> //importing sycl, different for hipSYCL
+#include <iostream>
+using namespace sycl; // Needs to be cautious when using hipSYCL. 
+//With hip SYCL we need to use sycl:: at every line.
+
+const std::string secret {
+    "Ifmmp-!xpsme\"\012J(n!tpssz-!Ebwf/!"
+    "J(n!bgsbje!J!dbo(u!ep!uibu/!.!IBM\01"};
+const auto sz = secret.size();
+
+int main(){
+    queue Q; //Creates a queue for new job request.
+    char*result = malloc_shared<char>(sz, Q); //Allocation for the data to be shared with GPU
+    std::memcpy(result,secret.data(),sz); //Copies the data to the GPU.
+
+    // Code below runs on GPU in parallel.
+    Q.parallel_for(sz,[=](auto&i) {
+        result[i] -= 1;
+    }).wait();
+    std::cout << result << "\n";
+    return 0;
+}
 
 ```
