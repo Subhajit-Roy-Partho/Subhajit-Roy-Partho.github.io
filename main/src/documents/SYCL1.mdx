@@ -1,4 +1,4 @@
-# Example -1: Hello World
+## Example -1: Hello World
 
 ```c++
 
@@ -20,19 +20,47 @@ int main(){
     queue Q; //Creates a queue for new job request.
     char*result = malloc_shared<char>(sz, Q); //Allocation for the data to be shared with GPU
     std::memcpy(result,secret.data(),sz); //Copies the data to the GPU.
+    // Q.memcpy(result,secret.data(),sz).wait(); //SYCL queue alternative
 
     // Code below runs on GPU in parallel.
-    Q.parallel_for(sz,[=](auto&i) {
+    Q.parallel_for(sz,[=](auto&i) {  //parallel_for distribute the work into gpu cores async
         result[i] -= 1;
-    }).wait();
+    }).wait(); // To wait for async parallel_for all the task to finish.
+
     std::cout << result << "\n";
     return 0;
 }
 
 ```
 
+##### The above code will produce the following result:
 
-# Example -2: Vector Addition in GPU
+Hello, world!	I'm sorry, Dave. I'm afraid I can't do that. - HAL
+
+##### Reference parallel_for CPU form:
+
+```c++
+
+// Fortran loop
+do i = 1, n
+    z(i) = alpha * x(i) + y(i)
+end do
+
+
+// C++ loop
+for (int i=0;i<n;i++) {
+    z[i] = alpha * x[i] + y[i];
+}
+
+
+// SYCL kernel
+myq.parallel_for(range{n},[=](id<1> i) {
+    z[i] = alpha * x[i] + y[i];
+}).wait();
+
+```
+
+## Example -2: Vector Addition in GPU
 
 ```c++
 
