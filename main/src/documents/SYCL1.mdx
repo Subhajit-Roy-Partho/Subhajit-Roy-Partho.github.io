@@ -24,6 +24,7 @@ int main(){
 
     // Code below runs on GPU in parallel.
     Q.parallel_for(sz,[=](auto&i) {  //parallel_for distribute the work into gpu cores async
+    // The above is lambda function. capture values in sz and throw them into i
         result[i] -= 1;
     }).wait(); // To wait for async parallel_for all the task to finish.
 
