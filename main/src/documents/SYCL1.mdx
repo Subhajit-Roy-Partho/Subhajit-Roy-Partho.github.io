@@ -1,3 +1,5 @@
+# Example -1: Hello World
+
 ```c++
 
 // This is executed using intel SYCL compiler.
@@ -25,6 +27,58 @@ int main(){
     }).wait();
     std::cout << result << "\n";
     return 0;
+}
+
+```
+
+
+# Example -2: Vector Addition in GPU
+
+```c++
+
+#include <iostream>
+#include <CL/sycl.hpp>
+
+using namespace sycl;
+class vector_addition;
+
+int main(int, char**) {
+
+   float4 vec_a = { 2.0, 3.0, 7.0, 4.0 };
+   float4 vec_b = { 4.0, 6.0, 1.0, 3.0 };
+   float4 vec_c = { 0.0, 0.0, 0.0, 0.0 };
+
+   default_selector device_selector;
+
+   queue queue(device_selector);
+
+   std::cout << "Running on "
+             << queue.get_device().get_info<info::device::name>()
+             << "\n";
+   {
+      buffer<float4, 1> vec_a_sycl(&vec_a, range<1>(1));
+      buffer<float4, 1> vec_b_sycl(&vec_b, range<1>(1));
+      buffer<float4, 1> vec_c_sycl(&vec_c, range<1>(1));
+
+      queue.submit([&] (cl::sycl::handler& cgh) {
+
+         auto vec_a_acc = vec_a_sycl.get_access<access::mode::read>(cgh);
+         auto vec_b_acc = vec_b_sycl.get_access<access::mode::read>(cgh);
+         auto vec_c_acc = vec_c_sycl.get_access<access::mode::discard_write>(cgh);
+
+         cgh.single_task<class vector_addition>([=] () {
+         vec_c_acc[0] = vec_a_acc[0] + vec_b_acc[0];
+         });
+      });
+   }
+
+   std::cout << "  Vec_A { " << vec_a.x() << ", " << vec_a.y() << ", " << vec_a.z() << ", " << vec_a.w() << " }\n"
+        << "+ Vec_B { " << vec_b.x() << ", " << vec_b.y() << ", " << vec_b.z() << ", " << vec_b.w() << " }\n"
+        << "----------------------\n"
+        << "= Vec_C { " << vec_c.x() << ", " << vec_c.y() << ", " << vec_c.z() << ", " << vec_c.w() << " }"
+        << std::endl;
+
+   return 0;
 }
 
 ```
