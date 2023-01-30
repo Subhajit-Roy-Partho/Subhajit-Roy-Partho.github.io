@@ -31,6 +31,7 @@ const Footer = () => {
           a: { color: `text` },
         }}
       >
+        <p>Something is going wrong</p>
         {/* {isDark ? (
           <img width="30" height="30" src="https://img.lekoarts.de/gatsby/logo_v2-light_w30.png" alt="LekoArts Logo" />
         ) : (
