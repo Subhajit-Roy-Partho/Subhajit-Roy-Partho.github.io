@@ -24,12 +24,6 @@ const config: GatsbyConfig = {
       options: {},
     },
     {
-      resolve: 'gatsby-theme-elemental',
-      options: {
-        basePath: `/alexa`,
-      },
-    },
-    {
       resolve: `gatsby-plugin-manifest`,
       options: {
         name: `Cara - @lekoarts/gatsby-theme-cara`,
