@@ -12,7 +12,7 @@ const config: GatsbyConfig = {
     siteTitleAlt: `My Portfolio`,
     siteHeadline: `Subhajit`,
     siteUrl: `https://subhajit-roy-partho.github.io`,
-    siteDescription: `Playful and Colorful One-Page portfolio featuring Parallax effects and animations`,
+    siteDescription: `My webpage`,
     siteImage: `/banner.jpg`,
     author: `@lekoarts_de`,
   },
@@ -24,11 +24,17 @@ const config: GatsbyConfig = {
       options: {},
     },
     {
+      resolve: 'gatsby-theme-elemental',
+      options: {
+        basePath: `/alexa`,
+      },
+    },
+    {
       resolve: `gatsby-plugin-manifest`,
       options: {
         name: `Cara - @lekoarts/gatsby-theme-cara`,
-        short_name: `Cara`,
-        description: `Playful and Colorful One-Page portfolio featuring Parallax effects and animations`,
+        short_name: `Subhajit`,
+        description: `My webpage`,
         start_url: `/`,
         background_color: `#141821`,
         // This will impact how browsers show your PWA/website
