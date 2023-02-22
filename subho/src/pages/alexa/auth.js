@@ -2,7 +2,7 @@ import * as React from "react";
 import queryString from 'query-string';
 
 
-export default function Index(){
+export default function Index({location}){
     var userId = queryString.parse(location.search);
     return(
         <div>
