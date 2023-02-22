@@ -1,14 +1,20 @@
 import * as React from "react";
-import queryString from 'query-string';
 
 
-export default function Index({location}){
-    var userId = queryString.parse(location.search);
+export default function Index(props){
+    var string = props.location.search;
+    string = string.split("?");
+    var userId = string[1].split("userId=").splice(1);
+    var data = string[2].split("data=").splice(1);
+    console.log(userId);
     return(
         <div>
             <h1>Developing</h1>
             <p>
                 The userID is : {userId}
+            </p>
+            <p>
+                The Data is: {data}
             </p>
         </div>
     )
