@@ -14,7 +14,9 @@ const config: GatsbyConfig = {
     siteUrl: `https://subhajit-roy-partho.github.io`,
     siteDescription: `My webpage`,
     siteImage: `/banner.jpg`,
-    author: `@lekoarts_de`,
+    author: `Subhajit`,
+    amazonClientId: `amzn1.application-oa2-client.2885eb8cb4d242e0acff603630325046`,
+    amazonClientSecret: `1d939c1c7cf9440d23a5d9755b21adc62828efed6f84c1f1e18b7e1319c5edf9`
   },
   trailingSlash: `never`,
   plugins: [
