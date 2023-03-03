@@ -5,56 +5,44 @@ import { Button } from "theme-ui";
 
 export default function Access(props){
     var originalState = 'something';
-    var verify = '';
+    var challange ='';
     if (typeof window != "undefined"){
         React.useEffect(()=>{
 
-            localStorage.getItem('state')
+            localStorage.getItem('state');
+            localStorage.getItem('challange');
         })
-        originalState = String(localStorage.state).substring(1,String(localStorage.state).length-1);
-        verify = String(localStorage.challange).substring(1,String(localStorage.challange).length-1);
+        originalState = JSON.parse(localStorage.getItem("state"));
     }
-    // React.useEffect(() => {
-    //     if (!windowLoaded){
-    //         if (typeof window !== 'undefined' && window){
-    //             setWindowLoaded(true)
-    //         }
-    //     }
-    // }, [windowLoaded]);
-    // React.useEffect(() => {
-    //     if (!initialized && windowLoaded) {
-    //         originalState = localStorage.getItem('state')
-    //         StorageHelpers.initiateStorage();
-        
-    //         setInitialized(true);
-    //     }
-    //     }, [initialized, windowLoaded]);
+
     var string =["",""];
     string[0] = props.location.search.split("&")[0];
     string[1] = String(props.location.search.split("&")[2]);
     var code = string;
     var state = string;
-    // if(typeof window != "undefined"){
-        // string = String(props.location.search.split("&"));
-        // originalState = localStorage.state.split('"')[1];
-    // }
+
         code = string[0].split("=")[1];
         state = string[1].split("=")[1];
     const clientId = props.data.site.siteMetadata.amazonClientId;
     const clientSecret = props.data.site.siteMetadata.amazonClientSecret;
 
-    console.log(code,state,originalState);
-    if (state === originalState){
+    if (typeof window != "undefined"){
+    challange = String(JSON.parse(localStorage.getItem('challange')));
+    console.log(code,state,JSON.parse(localStorage.getItem("state")),challange);
+    if (state === String(code,state,JSON.parse(localStorage.getItem("state"))) ){
         console.log("sane");
-    }
+    }else{
+        console.log("Something went worng");
+    }}
     function trigger(){
+        challange = String(JSON.parse(localStorage.getItem('challange')));
         axios.post('https://api.amazon.com//auth/o2/token',{
             grant_type:'authorization_code',
             code: code,
             client_id: clientId,
             client_secret: clientSecret,
-            redirect_uri: 'https://subhajit-roy-partho.netlify.app/oauth/access'
-            // code_verifier={}
+            redirect_uri: 'https://subhajit-roy-partho.netlify.app/oauth/access',
+            code_verifier: challange
         }).then(function(response){
             console.log(response);
         }).catch(function(error){

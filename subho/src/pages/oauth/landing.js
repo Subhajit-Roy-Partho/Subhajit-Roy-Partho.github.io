@@ -18,20 +18,21 @@ export default function Landing({data}){
   };
   var state = '';
   var challange = '';
-  console.log(state,challange);
   if (typeof window != "undefined"){
     React.useEffect(()=>{
       localStorage.setItem("state",JSON.stringify(makeid(30)));
       localStorage.setItem("challange",JSON.stringify(Base64.stringify(sha256(state))));
-  
-
       });
 
   }
-  state = String(localStorage.state).substring(1,String(localStorage.state).length-1);
-  challange = String(localStorage.challange).substring(1,1,String(localStorage.challange).length-1);
-  console.log(state,challange);
+  // state = String(localStorage.state).substring(1,String(localStorage.state).length-1);
+  // challange = String(localStorage.challange).substring(1,1,String(localStorage.challange).length-1);
   function amazonClick(){
+    if (typeof window != "undefined"){
+        state = JSON.parse(localStorage.getItem("state"));
+        challange = JSON.parse(localStorage.getItem("challange"));
+      console.log(state,challange);
+    }
     navigate(`https://www.amazon.com/ap/oa?client_id=`+
     data.site.siteMetadata.amazonClientId
     +`&scope=profile&response_type=code&state=`+state+`&redirect_uri=https://subhajit-roy-partho.netlify.app/oauth/access&code_challenge=`+challange+`&code_challenge_method=S256`);
