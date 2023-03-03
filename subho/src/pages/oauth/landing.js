@@ -7,11 +7,13 @@ import Base64 from 'crypto-js/enc-base64';
 export default function Landing({data}){
   const state = makeid(30);
   const challange = Base64.stringify(sha256(state))
-  React.useEffect(()=>{
-      localStorage.setItem("state",JSON.stringify(state));
-      localStorage.setItem("challange",JSON.stringify(challange));
+  if (typeof window != "undefined"){
+    React.useEffect(()=>{
+        localStorage.setItem("state",JSON.stringify(state));
+        localStorage.setItem("challange",JSON.stringify(challange));
 
-    });
+      });
+  }
   function makeid(length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

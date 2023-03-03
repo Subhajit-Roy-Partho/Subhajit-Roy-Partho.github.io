@@ -4,16 +4,44 @@ import * as React from "react";
 import { Button } from "theme-ui";
 
 export default function Access(props){
-    React.useEffect(()=>{
-        localStorage.getItem('state')
-    })
-    var string = props.location.search.split("&");
-    const code = string[0].substring(6);
-    const state = string[2].substring(6);
-    const originalState = localStorage.state.substring(1,localStorage.state.length-1);
+    var originalState = 'something';
+    if (typeof window != "undefined"){
+        React.useEffect(()=>{
+
+            localStorage.getItem('state')
+        })
+        originalState = String(localStorage.state).substring(1,String(localStorage.state).length-1)
+    }
+    // React.useEffect(() => {
+    //     if (!windowLoaded){
+    //         if (typeof window !== 'undefined' && window){
+    //             setWindowLoaded(true)
+    //         }
+    //     }
+    // }, [windowLoaded]);
+    // React.useEffect(() => {
+    //     if (!initialized && windowLoaded) {
+    //         originalState = localStorage.getItem('state')
+    //         StorageHelpers.initiateStorage();
+        
+    //         setInitialized(true);
+    //     }
+    //     }, [initialized, windowLoaded]);
+    var string =["",""];
+    string[0] = props.location.search.split("&")[0];
+    string[1] = String(props.location.search.split("&")[2]);
+    var code = string;
+    var state = string;
+    // if(typeof window != "undefined"){
+        // string = String(props.location.search.split("&"));
+        // originalState = localStorage.state.split('"')[1];
+    // }
+        code = string[0].split("=")[1];
+        state = string[1].split("=")[1];
     const clientId = props.data.site.siteMetadata.amazonClientId;
     const clientSecret = props.data.site.siteMetadata.amazonClientSecret;
 
+    console.log(code,state,originalState);
     // if (state === originalState){
     //     console.log("sane");
     // }else{
