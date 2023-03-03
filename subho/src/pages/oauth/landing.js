@@ -31,7 +31,7 @@ export default function Landing({data}){
     setChallange(Base64.stringify(sha256(state)));
     setCount(1);
   }
-  
+
   if (typeof window != "undefined"){
     React.useEffect(()=>{
       localStorage.setItem("state",JSON.stringify(state));
@@ -45,7 +45,7 @@ export default function Landing({data}){
       console.log(state,challange,data.site.siteMetadata.amazonClientId);
     navigate(`https://www.amazon.com/ap/oa?client_id=`+
     data.site.siteMetadata.amazonClientId
-    +`&scope=profile&response_type=code&state=`+state+`&redirect_uri=https://subhajit-roy-partho.netlify.app/oauth/access&code_challenge=`+challange+`&code_challenge_method=S256`
+    +`&scope=profile&response_type=code&state=`+state+`&redirect_uri=https://subhajit-roy-partho.netlify.app/oauth/access&code_challenge=`+`47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=`+`&code_challenge_method=S256`
     )}
   return(
       <div>
