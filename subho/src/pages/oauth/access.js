@@ -48,9 +48,13 @@ export default function Access(props){
             // code_verifier: challange
         }).then(function(response){
             console.log(response);
-            setAccessToken(response.data.access_token);
-            // setRefreshToken(response.data.refreshToken);
+            setAccessToken(String(response.data.access_token));
+            setRefreshToken(String(response.data.refresh_token));
             console.log(response.data.access_token,accessToken);
+            if (window !== "undefined"){
+                localStorage.setItem("access_token",response.data.access_token);
+                localStorage.setItem("refresh_token",response.data.refresh_token)
+            }
         }).catch(function(error){
             console.log(error);
         })
