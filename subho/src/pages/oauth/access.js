@@ -42,18 +42,16 @@ export default function Access(props){
     const clientSecret = props.data.site.siteMetadata.amazonClientSecret;
 
     console.log(code,state,originalState);
-    // if (state === originalState){
-    //     console.log("sane");
-    // }else{
-    //     navigate('/oauth/landing')
-    // }
+    if (state === originalState){
+        console.log("sane");
+    }
     function trigger(){
         axios.post('https://api.amazon.com//auth/o2/token',{
             grant_type:'authorization_code',
             code: code,
             client_id: clientId,
             client_secret: clientSecret,
-            redirect_uri: 'https://subhajit-roy-partho.netlify.app/oauth/token'
+            // redirect_uri: 'https://subhajit-roy-partho.netlify.app/oauth/token'
             // code_verifier=5CFCAiZC0g0OA-jmBmmjTBZiyPCQsnq_2q5k9fD-aAY
         }).then(function(response){
             console.log(response);
