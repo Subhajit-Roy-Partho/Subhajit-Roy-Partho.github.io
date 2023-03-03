@@ -1,9 +1,9 @@
 {
   "private": true,
-  "name": "Subhajit",
+  "name": "subhajit",
   "description": "My webpage",
   "version": "0.2.14",
-  "author": "Subhajit",
+  "author": "Subhajit2",
   "license": "No-license",
   "starter-name": "gatsby-starter-portfolio-cara",
   "scripts": {
@@ -17,13 +17,16 @@
     "deploy": "gatsby build --prefix-paths && gh-pages -d public"
   },
   "dependencies": {
-    "@aws-amplify/ui-react": "^4.3.9",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
     "@lekoarts/gatsby-theme-cara": "^5.0.5",
-    "aws-amplify": "^5.0.16",
-    "aws-sdk": "^2.1327.0",
+    "@mui/material": "^5.11.11",
+    "crypto-hash": "^2.0.1",
+    "crypto-js": "^4.1.1",
     "gatsby": "^5.5.0",
     "gatsby-plugin-manifest": "^5.5.0",
     "gatsby-plugin-webpack-bundle-analyser-v2": "^1.1.30",
+    "mdb-react-ui-kit": "^5.1.0",
     "query-string": "^8.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
