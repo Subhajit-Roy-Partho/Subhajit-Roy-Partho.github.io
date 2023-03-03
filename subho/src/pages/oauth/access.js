@@ -29,11 +29,12 @@ export default function Access(props){
     if (typeof window != "undefined"){
     challange = String(JSON.parse(localStorage.getItem('challange')));
     console.log(code,state,JSON.parse(localStorage.getItem("state")),challange);
-    if (state === String(code,state,JSON.parse(localStorage.getItem("state"))) ){
+    }
+    if (state === challange ){
         console.log("sane");
     }else{
         console.log("Something went worng");
-    }}
+    }
     function trigger(){
         challange = String(JSON.parse(localStorage.getItem('challange')));
         axios.post('https://api.amazon.com//auth/o2/token',{
@@ -42,7 +43,7 @@ export default function Access(props){
             client_id: clientId,
             client_secret: clientSecret,
             redirect_uri: 'https://subhajit-roy-partho.netlify.app/oauth/access',
-            code_verifier: challange
+            // code_verifier: challange
         }).then(function(response){
             console.log(response);
         }).catch(function(error){
