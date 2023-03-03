@@ -10,7 +10,8 @@ export default function Access(props){
 
             localStorage.getItem('state')
         })
-        originalState = String(localStorage.state).substring(1,String(localStorage.state).length-1)
+        originalState = String(localStorage.state).substring(1,String(localStorage.state).length-1);
+        verify = String(localStorage.challange).substring(1,String(localStorage.challange).length-1);
     }
     // React.useEffect(() => {
     //     if (!windowLoaded){
@@ -52,7 +53,7 @@ export default function Access(props){
             client_id: clientId,
             client_secret: clientSecret,
             redirect_uri: 'https://subhajit-roy-partho.netlify.app/oauth/access'
-            // code_verifier=5CFCAiZC0g0OA-jmBmmjTBZiyPCQsnq_2q5k9fD-aAY
+            // code_verifier={}
         }).then(function(response){
             console.log(response);
         }).catch(function(error){
