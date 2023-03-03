@@ -17,7 +17,10 @@
     "deploy": "gatsby build --prefix-paths && gh-pages -d public"
   },
   "dependencies": {
+    "@aws-amplify/ui-react": "^4.3.9",
     "@lekoarts/gatsby-theme-cara": "^5.0.5",
+    "aws-amplify": "^5.0.16",
+    "aws-sdk": "^2.1327.0",
     "gatsby": "^5.5.0",
     "gatsby-plugin-manifest": "^5.5.0",
     "gatsby-plugin-webpack-bundle-analyser-v2": "^1.1.30",
