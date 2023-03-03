@@ -16,17 +16,21 @@ export default function Landing({data}){
     }
     return result;
   };
-  var state = makeid(30);
-  var challange = Base64.stringify(sha256(state))
+  var state = '';
+  var challange = '';
+  console.log(state,challange);
   if (typeof window != "undefined"){
     React.useEffect(()=>{
-        localStorage.setItem("state",JSON.stringify(state));
-        localStorage.setItem("challange",JSON.stringify(challange));
+      localStorage.setItem("state",JSON.stringify(makeid(30)));
+      localStorage.setItem("challange",JSON.stringify(Base64.stringify(sha256(state))));
+  
 
       });
-      state = String(localStorage.state).substring(1,String(localStorage.state).length-1);
-      challange = String(localStorage.challange).substring(1,1,String(localStorage.challange).length-1);
+
   }
+  state = String(localStorage.state).substring(1,String(localStorage.state).length-1);
+  challange = String(localStorage.challange).substring(1,1,String(localStorage.challange).length-1);
+  console.log(state,challange);
   function amazonClick(){
     navigate(`https://www.amazon.com/ap/oa?client_id=`+
     data.site.siteMetadata.amazonClientId

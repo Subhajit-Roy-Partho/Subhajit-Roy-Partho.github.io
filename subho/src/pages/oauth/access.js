@@ -5,6 +5,7 @@ import { Button } from "theme-ui";
 
 export default function Access(props){
     var originalState = 'something';
+    var verify = '';
     if (typeof window != "undefined"){
         React.useEffect(()=>{
 
