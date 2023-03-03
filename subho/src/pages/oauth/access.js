@@ -51,7 +51,7 @@ export default function Access(props){
             code: code,
             client_id: clientId,
             client_secret: clientSecret,
-            // redirect_uri: 'https://subhajit-roy-partho.netlify.app/oauth/token'
+            redirect_uri: 'https://subhajit-roy-partho.netlify.app/oauth/access'
             // code_verifier=5CFCAiZC0g0OA-jmBmmjTBZiyPCQsnq_2q5k9fD-aAY
         }).then(function(response){
             console.log(response);
