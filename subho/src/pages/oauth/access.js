@@ -4,6 +4,8 @@ import * as React from "react";
 import { Button } from "theme-ui";
 
 export default function Access(props){
+    const [accessToken,setAccessToken] = React.useState("");
+    const [refreshToken,setRefreshToken] = React.useState("");
     var originalState = 'something';
     var challange ='';
     if (typeof window != "undefined"){
@@ -46,6 +48,11 @@ export default function Access(props){
             // code_verifier: challange
         }).then(function(response){
             console.log(response);
+            if (typeof window != "undefined"){
+                setAccessToken(response.data.access_token);
+                setRefreshToken(response.data.refreshToken);
+            }
+            console.log(accessToken,refreshToken);
         }).catch(function(error){
             console.log(error);
         })
