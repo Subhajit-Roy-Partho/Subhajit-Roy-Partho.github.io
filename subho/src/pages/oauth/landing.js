@@ -5,17 +5,6 @@ import sha256 from 'crypto-js/sha256';
 import Base64 from 'crypto-js/enc-base64';
 
 export default function Landing({data}){
-  const state = makeid(30);
-  const challange = Base64.stringify(sha256(state))
-  if (typeof window != "undefined"){
-    React.useEffect(()=>{
-        localStorage.setItem("state",JSON.stringify(state));
-        localStorage.setItem("challange",JSON.stringify(challange));
-
-      });
-      state = String(localStorage.state).substring(1,String(localStorage.state).length-1);
-      challange = String(localStorage.challange).substring(1,1,String(localStorage.challange).length-1);
-  }
   function makeid(length) {
     let result = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -27,6 +16,17 @@ export default function Landing({data}){
     }
     return result;
   };
+  var state = makeid(30);
+  var challange = Base64.stringify(sha256(state))
+  if (typeof window != "undefined"){
+    React.useEffect(()=>{
+        localStorage.setItem("state",JSON.stringify(state));
+        localStorage.setItem("challange",JSON.stringify(challange));
+
+      });
+      state = String(localStorage.state).substring(1,String(localStorage.state).length-1);
+      challange = String(localStorage.challange).substring(1,1,String(localStorage.challange).length-1);
+  }
   function amazonClick(){
     navigate(`https://www.amazon.com/ap/oa?client_id=`+
     data.site.siteMetadata.amazonClientId
