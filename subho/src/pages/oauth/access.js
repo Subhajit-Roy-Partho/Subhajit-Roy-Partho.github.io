@@ -7,8 +7,8 @@ export default function Access(props){
     React.useEffect(()=>{
         localStorage.getItem('state')
     })
-    var string = props.location.search.split("?")[1].split('&');
-    const code = string[0].substring(5);
+    var string = props.location.search.split("&");
+    const code = string[0].substring(6);
     const state = string[2].substring(6);
     const originalState = localStorage.state.substring(1,localStorage.state.length-1);
     const clientId = props.data.site.siteMetadata.amazonClientId;
