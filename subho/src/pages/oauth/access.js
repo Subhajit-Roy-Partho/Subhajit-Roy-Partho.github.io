@@ -52,9 +52,9 @@ export default function Access(props){
                 localStorage.setItem("access_token",response.data.access_token);
                 localStorage.setItem("refresh_token",response.data.refresh_token);
                 localStorage.setItem("token",1);
-                setAccessToken(String(response.data.access_token));
-                setRefreshToken(String(response.data.refresh_token));
             }
+            setAccessToken(String(response.data.access_token));
+            setRefreshToken(String(response.data.refresh_token));
             console.log(response.data.access_token,accessToken);
         }).catch(function(error){
             console.log(error);
