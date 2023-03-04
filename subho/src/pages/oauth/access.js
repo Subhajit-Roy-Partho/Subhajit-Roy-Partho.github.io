@@ -15,8 +15,6 @@ export default function Access(props){
             localStorage.getItem('challange');
         })
         originalState = JSON.parse(localStorage.getItem("state"));
-        setAccessToken(localStorage.getItem('access_token'));
-        setRefreshToken(localStorage.getItem('refresh_token'));
     }
 
     var string =["",""];
