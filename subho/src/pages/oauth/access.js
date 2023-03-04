@@ -8,6 +8,8 @@ export default function Access(props){
     var refresh_token='';
     var originalState = 'something';
     var challange ='';
+    const [triggerNum,setTriggerNum]=React.useState(0);
+    const [profile,setProfile]=React.useState([{name:''}])
     if (typeof window != "undefined"){
         React.useEffect(()=>{
 
@@ -56,14 +58,21 @@ export default function Access(props){
             access_token=String(response.data.access_token);
             refresh_token=String(response.data.refresh_token);
             console.log(access_token,refresh_token);
+            //axios post
+
+            setTriggerNum(1);
         }).catch(function(error){
             console.log(error);
         })
     }
     return(
         <div>
-            {console.log()}
-            <Button onClick={()=>{trigger()}}>Something</Button>
+            <Button onClick={()=>{trigger()}}>Access Amazon Profile</Button>
+            {triggerNum === 1 &&
+                <p>
+                    Profile = {profile.name}
+                </p>
+            }
         </div>
     )
 }
