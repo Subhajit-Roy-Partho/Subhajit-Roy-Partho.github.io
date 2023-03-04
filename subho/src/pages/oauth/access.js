@@ -15,6 +15,8 @@ export default function Access(props){
             localStorage.getItem('challange');
         })
         originalState = JSON.parse(localStorage.getItem("state"));
+        setAccessToken(localStorage.getItem('access_token'));
+        setRefreshToken(localStorage.getItem('refresh_token'));
     }
 
     var string =["",""];
@@ -48,12 +50,13 @@ export default function Access(props){
             // code_verifier: challange
         }).then(function(response){
             console.log(response);
-            setAccessToken(String(response.data.access_token));
-            setRefreshToken(String(response.data.refresh_token));
             console.log(response.data.access_token,accessToken);
             if (window !== "undefined"){
                 localStorage.setItem("access_token",response.data.access_token);
-                localStorage.setItem("refresh_token",response.data.refresh_token)
+                localStorage.setItem("refresh_token",response.data.refresh_token);
+                localStorage.setItem("token",1);
+                setAccessToken(String(response.data.access_token));
+                setRefreshToken(String(response.data.refresh_token));
             }
         }).catch(function(error){
             console.log(error);
