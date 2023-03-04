@@ -4,8 +4,8 @@ import * as React from "react";
 import { Button } from "theme-ui";
 
 export default function Access(props){
-    const [accessToken,setAccessToken] = React.useState("something large here | dflkshjflihslfnlks |isfjslkdfjlksfnlk n |fjisdjflsdlkfslnm");
-    const [refreshToken,setRefreshToken] = React.useState("something large here | dflkshjflihslfnlks |isfjslkdfjlksfnlk n |fjisdjflsdlkfslnm");
+    var access_token='';
+    var refresh_token='';
     var originalState = 'something';
     var challange ='';
     if (typeof window != "undefined"){
@@ -53,9 +53,9 @@ export default function Access(props){
                 localStorage.setItem("refresh_token",response.data.refresh_token);
                 localStorage.setItem("token",1);
             }
-            setAccessToken(String(response.data.access_token));
-            setRefreshToken(String(response.data.refresh_token));
-            console.log(response.data.access_token,accessToken);
+            access_token=String(response.data.access_token);
+            refresh_token=String(response.data.refresh_token);
+            console.log(access_token,refresh_token);
         }).catch(function(error){
             console.log(error);
         })
