@@ -3,13 +3,9 @@ name: deploy
 on:
   push:
     branches:
-      - master
-      - main
       - Jekyll
   pull_request:
     branches:
-      - master
-      - main
       - Jekyll
   workflow_dispatch:
 
