@@ -3,11 +3,11 @@ name: deploy
 on:
   push:
     branches:
-      - master
+      - Jekyll
       - main
   pull_request:
     branches:
-      - master
+      - Jekyll
       - main
   workflow_dispatch:
 
