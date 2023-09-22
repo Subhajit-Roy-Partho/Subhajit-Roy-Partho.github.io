@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: <a href='#'>Affiliations</a>. Department of Physics, University of Arizona
+subtitle: <a href='#'>Affiliations</a>. Department of Physics, Arizona State University
 
 profile:
   align: right
