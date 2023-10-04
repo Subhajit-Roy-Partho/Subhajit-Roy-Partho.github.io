@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: localhost/sitemap.xml
+Sitemap: http://subhajit-roy-partho.github.io/sitemap.xml
