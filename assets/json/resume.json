@@ -1,18 +1,18 @@
 {
   "basics": {
-    "name": "Albert Einstein",
-    "label": "Scientist",
+    "name": "Subhajit Roy",
+    "label": "PhD candidate at Arizona State University",
     "image": "",
-    "email": "albert@einstein.de",
-    "phone": "(912) 123-4567",
-    "url": "https://alshedivat.github.io/al-folio/",
-    "summary": "A German-born theoretical physicist, widely ranked among the greatest and most influential scientists of all time",
+    "email": "me.subhajitroy1999@gmail.com",
+    "phone": "(315) 740-2757",
+    "url": "https://subhajit-roy-partho.github.io",
+    "summary": "Biophysicis with special interest in simulation and molecular dynamics",
     "location": {
-      "address": "2712 Broadway St",
-      "postalCode": "CA 94115",
-      "city": "San Francisco",
+      "address": "",
+      "postalCode": "AZ",
+      "city": "Tempe",
       "countryCode": "US",
-      "region": "California"
+      "region": "Arizona"
     },
     "profiles": [
       {
