@@ -63,12 +63,20 @@
   "skills": [],
   "languages": [
     {
-      "language": "German",
+      "language": "Bangla",
       "fluency": "Native speaker"
     },
     {
       "language": "English",
       "fluency": "Fluent"
+    },
+    {
+      "language": "Hindi",
+      "fluency":"Fluent"
+    },
+    {
+      "language":"Sanskrit",
+      "fluency":"intermediate"
     }
   ],
   "interests": [],
