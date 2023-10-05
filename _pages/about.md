@@ -6,7 +6,7 @@ subtitle: <a href='#'>Affiliations</a>. Department of Physics, Arizona State Uni
 
 profile:
   align: right
-  image: prof_pic.jpg
+  image: prof_pic.png
   image_circular: false # crops the image to make it circular
   address: >
     <p>1050 S Stanley Pl</p>
