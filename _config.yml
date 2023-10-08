@@ -8,7 +8,7 @@ middle_name:
 last_name: Roy
 email: me.subhajitroy1999@gmail.com
 description: > # the ">" symbol means to ignore newlines until "footer_text:"
-  I am a PhD student at Petr Sulc's Lab, Arizona State University. I am currently persuing computational biophysics with focus on self assembly of genetic materials. I am highly invested in developing coarse grain model of DNA which would allow us to study these assembly at a much quicker pace, otherwise impossible with atomistic approach. I also work with Machine Learning models that could even simplify our life by predicting desired properties without even going through computationally intensive simulations where ever possible. I undertake other application based project like dna cryptography and storage.
+  I am a PhD student at Petr Sulc's Lab, Arizona State University. I am currently persuing computational biophysics with focus on self assembly of genetic materials. I am highly invested in developing coarse grain model of DNA which would allow us to study these assembly at a much quicker pace, otherwise impossible with atomistic approach. I also work with Machine Learning models that could even simplify our life by predicting desired properties without even going through computationally intensive simulations where ever possible. I undertook other application based project like dna cryptography and storage.
 footer_text: >
   Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio">al-folio</a> theme.
   Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
