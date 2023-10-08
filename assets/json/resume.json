@@ -24,40 +24,36 @@
   },
   "work": [
     {
-      "name": "Institute for Advanced Study, Princeton University",
-      "position": "Professor of Theoretical Physics",
+      "name": "Arizona State University",
+      "position": "Teaching Assistance",
       "url": "https://example.com",
-      "startDate": "1933-01-01",
-      "endDate": "1955-01-01",
-      "summary": "Teaching at Palmer Physical Laboratory (now 302 Frist Campus Center). While not a professor at Princeton, I associated with the physics professors and continued to give lectures on campus.",
-      "highlights": [
-        "Relativity"
-      ]
+      "startDate": "2022-08-01",
+      "endDate": "2023-04-23",
+      "summary": "Taught PHY 121 Mechanics Lab Course.",
+      "highlights": []
     }
   ],
   "volunteer": [],
   "education": [
     {
-      "institution": "University of Zurich, Zurich, Switzerland",
-      "url": "https://www.uzh.ch/",
-      "area": "Software Development",
+      "institution": "Arizona State University",
+      "url": "https://physics.asu.edu/",
+      "area": "Self assembly of DNA Origami",
       "studyType": "PhD",
-      "startDate": "1905-01-01",
-      "endDate": "1905-01-01",
-      "score": "",
+      "startDate": "2022-08-01",
+      "endDate": "2027-08-01",
+      "score": "95%",
       "courses": [
-        "Theory of Relativity"
+        "Machine Learning",
+        "Quantum Mechanics",
+        "Statistical Mechanics",
+        "Rigid body dynamics and Classical Mechanics",
+        "Advance Biophysics",
+        "MD Simulation"
       ]
     }
   ],
-  "awards": [
-    {
-      "title": "Nobel Prize in Physics",
-      "date": "1921-11-01",
-      "awarder": "Royal Swedish Academy of Sciences",
-      "summary": "The Nobel Prizes are five separate prizes that, according to Alfred Nobel's will of 1895, are awarded to 'those who, during the preceding year, have conferred the greatest benefit to humankind.'"
-    }
-  ],
+  "awards": [],
   "certificates": [],
   "publications": [],
   "skills": [],
@@ -76,7 +72,15 @@
     },
     {
       "language":"Sanskrit",
-      "fluency":"intermediate"
+      "fluency":"Intermediate"
+    },
+    {
+      "language":"Japanese",
+      "fluency": "Learning"
+    },
+    {
+      "language":"Spanish",
+      "fluency":"Learning"
     }
   ],
   "interests": [],
