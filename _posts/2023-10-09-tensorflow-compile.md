@@ -1,6 +1,6 @@
 ---
 layout: post
-title: a post with code
+title: Compiling tensorflow natively
 date: 2023-10-09 00:00:00
 description: Compiling tensorflow natively for better performance and avx support.
 tags: compilation tensorflow ml fun
