@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: http://subhajit-roy-partho.github.io/sitemap.xml
+Sitemap: https://subhajit-roy-partho.github.io/sitemap.xml
