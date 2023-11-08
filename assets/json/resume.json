@@ -1,0 +1,89 @@
+{
+  "basics": {
+    "name": "Subhajit Roy",
+    "label": "PhD candidate at Arizona State University",
+    "image": "",
+    "email": "me.subhajitroy1999@gmail.com",
+    "phone": "",
+    "url": "https://subhajit-roy-partho.github.io",
+    "summary": "Biophysicis with special interest in simulation and molecular dynamics",
+    "location": {
+      "address": "",
+      "postalCode": "AZ",
+      "city": "Tempe",
+      "countryCode": "US",
+      "region": "Arizona"
+    },
+    "profiles": [
+      {
+        "network": "Twitter",
+        "username": "AlbertEinstein",
+        "url": "https://twitter.com/AlbertEinstein"
+      }
+    ]
+  },
+  "work": [
+    {
+      "name": "Arizona State University",
+      "position": "Teaching Assistance",
+      "url": "https://example.com",
+      "startDate": "2022-08-01",
+      "endDate": "2023-04-23",
+      "summary": "Taught PHY 121 Mechanics Lab Course.",
+      "highlights": []
+    }
+  ],
+  "volunteer": [],
+  "education": [
+    {
+      "institution": "Arizona State University",
+      "url": "https://physics.asu.edu/",
+      "area": "Self assembly of DNA Origami",
+      "studyType": "PhD",
+      "startDate": "2022-08-01",
+      "endDate": "2027-08-01",
+      "score": "95%",
+      "courses": [
+        "Machine Learning",
+        "Quantum Mechanics",
+        "Statistical Mechanics",
+        "Rigid body dynamics and Classical Mechanics",
+        "Advance Biophysics",
+        "MD Simulation"
+      ]
+    }
+  ],
+  "awards": [],
+  "certificates": [],
+  "publications": [],
+  "skills": [],
+  "languages": [
+    {
+      "language": "Bangla",
+      "fluency": "Native speaker"
+    },
+    {
+      "language": "English",
+      "fluency": "Fluent"
+    },
+    {
+      "language": "Hindi",
+      "fluency":"Fluent"
+    },
+    {
+      "language":"Sanskrit",
+      "fluency":"Intermediate"
+    },
+    {
+      "language":"Japanese",
+      "fluency": "Learning"
+    },
+    {
+      "language":"Spanish",
+      "fluency":"Learning"
+    }
+  ],
+  "interests": [],
+  "references": [],
+  "projects": []
+}
