@@ -1,12 +1,9 @@
 github_users:
-  - torvalds
-  - alshedivat
+  - subhajit-roy-partho
+  - subhajit-roy
 
 github_repos:
-  - alshedivat/al-folio
-  - twbs/bootstrap
-  - jekyll/jekyll
-  - jquery/jquery
-  - FortAwesome/Font-Awesome
-  - jpswalsh/academicons
-  - mathjax/MathJax
+  - subhajit-roy-partho/oxDNA
+  - subhajit-roy-partho/babyDNA
+  - subhajit-roy-partho/oxdna-viewer
+  - subhajit-roy-partho/oxDNAcpp

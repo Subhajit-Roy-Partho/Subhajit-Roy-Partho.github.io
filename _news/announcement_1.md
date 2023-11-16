@@ -5,4 +5,5 @@ inline: true
 related_posts: false
 ---
 
-A simple inline announcement.
+Test news.
+<!-- Link to [Babylon DNA](https://subhajit-roy-partho.github.io/babyDNA/). -->
