@@ -5,5 +5,5 @@ inline: true
 related_posts: false
 ---
 
-Test news.
+Link to [oxdna viewer](https://subhajit-roy-partho.github.io/oxdna-viewer/)
 <!-- Link to [Babylon DNA](https://subhajit-roy-partho.github.io/babyDNA/). -->
