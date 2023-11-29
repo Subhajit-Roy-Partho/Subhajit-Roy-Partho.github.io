@@ -11,14 +11,14 @@ description: > # the ">" symbol means to ignore newlines until "footer_text:"
   I am a PhD student at Petr Sulc's Lab, Arizona State University. I am currently persuing computational biophysics with focus on self assembly of genetic materials. I am highly invested in developing coarse grain model of DNA which would allow us to study these assembly at a much quicker pace, otherwise impossible with atomistic approach. I also work with Machine Learning models that could even simplify our life by predicting desired properties without even going through computationally intensive simulations where ever possible. I undertook other application based project like dna cryptography and storage.
 footer_text: >
   Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio">al-folio</a> theme.
-  Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
+  Hosted by ASU Public Server.
 keywords: jekyll, jekyll-theme, academic-website, portfolio-website  # add your own keywords or leave empty
 
 lang: en # the language of your site (for example: en, fr, cn, ru, etc.)
 icon: ⚛️  # the emoji used as the favicon (alternatively, provide image name in /assets/img/)
 
-url: https://subhajit-roy-partho.github.io # the base hostname & protocol for your site
-baseurl: # the subpath of your site, e.g. /blog/
+url: https://www.public.asu.edu # the base hostname & protocol for your site
+baseurl: /~sroy85/ # the subpath of your site, e.g. /blog/
 last_updated: false # set to true if you want to display last updated in the footer
 impressum_path:  # set to path to include impressum link in the footer, use the same path as permalink in a page, helps to conform with EU GDPR
 
@@ -113,7 +113,7 @@ contact_note: >
 # Analytics and search engine verification
 # -----------------------------------------------------------------------------
 
-# google_analytics: G-X8WMNMXDWQ # your Google Analytics measurement ID (format: G-XXXXXXXXXX)
+google_analytics: G-V8KHNDDKQS # your Google Analytics measurement ID (format: G-XXXXXXXXXX)
 cronitor_analytics:  # cronitor RUM analytics site ID (format: XXXXXXXXX)
 
 google_site_verification:  # your google-site-verification ID (Google Search Console)
