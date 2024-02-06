@@ -9,13 +9,20 @@ giscus_comments: true
 featured: true
 ---
 
-Useful gparted cli commands:
+Useful parted cli commands:
 
-- 
-
+- `print` - print the full configuration.
+- `select DEVICE` - to change to a different device and edit it.
+- `mklabel gpt` - to create a gpt label for the partition
+- `mkpart primary btrfs 1MiB 100%` - to create a partition of type primary with format btrfs starting at 1MiB and ending at 100% or end of the disk.
+- `` 
 Useful other disk management commands:
 
 - `lsblk` and `fdisk -l` shows disk configuration for all the disks.
+- `sudo mkfs.btrfs -f /dev/sda1` to create the final btrfs partition for sda1 partition. This is not always needed if parted does it by default.
+- `sudo blkid` to obtain all the uuid of the disks.
+- `/etc/fstab` fstab file needs to be appended with the new partition configuration if one wants to mount the partition automatically during restart.
+ 
 ### Conclusion
 
 parted cli is the most powerful partition tool available for terminal user. Meticious use could help save lot of time.
