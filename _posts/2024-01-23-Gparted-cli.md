@@ -22,7 +22,16 @@ Useful other disk management commands:
 - `sudo mkfs.btrfs -f /dev/sda1` to create the final btrfs partition for sda1 partition. This is not always needed if parted does it by default.
 - `sudo blkid` to obtain all the uuid of the disks.
 - `/etc/fstab` fstab file needs to be appended with the new partition configuration if one wants to mount the partition automatically during restart.
- 
+
+Validate settings:
+
+- `df -h` to show all the mount location.
+
+User management:
+
+- `sudo useradd -m -d /home/subho -s /bin/bash -G standard,admin subho` to add user subho with home location /home/subho, default shell as bash and add to group standard,admin.
+- `sudo passwd subho` to change or create password for user subho.
+
 ### Conclusion
 
 parted cli is the most powerful partition tool available for terminal user. Meticious use could help save lot of time.
