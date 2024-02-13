@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Cryosparc management
-date: 2024-01-15 00:00:00
+date: 2024-02-12 00:00:00
 description: Installation and management of Cryosparc
 tags: linux Cryo TEM
 categories: sample-posts
