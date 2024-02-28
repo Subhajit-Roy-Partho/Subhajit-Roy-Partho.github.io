@@ -1,0 +1,42 @@
+---
+layout: post
+title: Useful bash commands and functions
+date: 2024-02-12 00:00:00
+description: Useful bashrc commands that I require to write every time I create a new system.
+tags: linux bash
+categories: sample-posts
+giscus_comments: true
+featured: true
+---
+
+## Alias
+
+`alias md=mkdir`
+
+## Settings bashrc
+
+`shopt -s autocd`
+
+## Important functions
+```bash
+server(){
+    if [ $# -eq 0 ];then
+        ssh -CX user@serverIP
+    elif [ $1 = "port" ];then
+        if [ -z "$4" ];then
+            ssh -N -L $2:$3.serverIP:$2 user@serverIP
+        else
+            ssh -N -L $2:$3.serverIP:$4 user@serverIP
+        fi
+    elif [ $1 = "send" ];then
+        rsync -rzvP $2 user@serverIP:$3
+    elif [ $1 = "receive" ];then
+        rsync -rzvP user@serverIP:$2 $3
+    fi
+}
+```
+
+- `server` will just log you in
+- `server send yourLocation serverLocation` sends file to the server.
+- `server receive serverLocation yourLocation` downloads the files from server.
+- replace `server` with your server name, `user` to your user id, `serverIP` with the ip of the server.
