@@ -18,6 +18,8 @@ featured: true
 `shopt -s autocd`
 
 ## Important functions
+
+
 ```bash
 server(){
     if [ $# -eq 0 ];then
@@ -46,3 +48,26 @@ server(){
 - `server myjobs` - to see running jobs
 - `server "cat file"` - see a file
 - `server "tail file"` - last few lines of file, useful for log files.
+
+
+```bash
+asu(){
+    if [ $# -eq 0 ];then
+        echo "password\npush\n"|sudo openconnect -u user --server=sslvpn.asu.edu
+    elif [ $# -eq 1 ];then
+        echo "password\n$1\n"|sudo openconnect -u user --server=sslvpn.asu.edu
+    else
+        echo "$1\n$2\n"|sudo openconnect -u user --server=sslvpn.asu.edu
+    fi
+}
+```
+
+or 
+
+```bash
+    alias asu = 'echo "password\npush"|sudo openconnect -u user --server=sslvpn.asu.edu'
+```
+
+- first function only works with zsh, for bash use the 2nd one.
+- to sign in to asu network using terminal and openconnect with push authentication.
+- the above method is unsecure as the password is kept in the bashrc or zshrc file.
