@@ -32,6 +32,8 @@ server(){
         rsync -rzvP $2 user@serverIP:$3
     elif [ $1 = "receive" ];then
         rsync -rzvP user@serverIP:$2 $3
+    else
+        ssh user@serverIP $1
     fi
 }
 ```
@@ -40,3 +42,7 @@ server(){
 - `server send yourLocation serverLocation` sends file to the server.
 - `server receive serverLocation yourLocation` downloads the files from server.
 - replace `server` with your server name, `user` to your user id, `serverIP` with the ip of the server.
+- To execute commands just server "command". Few useful commands
+- `server myjobs` - to see running jobs
+- `server "cat file"` - see a file
+- `server "tail file"` - last few lines of file, useful for log files.
