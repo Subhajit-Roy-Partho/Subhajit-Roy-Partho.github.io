@@ -71,3 +71,17 @@ or
 - first function only works with zsh, for bash use the 2nd one.
 - to sign in to asu network using terminal and openconnect with push authentication.
 - the above method is unsecure as the password is kept in the bashrc or zshrc file.
+
+```bash
+gi(){
+    if [ $# -eq 0 ];then
+        git pull; git add .; git commit -m "update"; git push;
+    elif [ $1 = "commit" ];then
+        git add .; git commit -m $2; git push
+    elif [ $# -eq 1];then
+        git clone $1
+    fi
+}
+```
+
+- short function to do git stuff.
