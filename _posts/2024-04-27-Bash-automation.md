@@ -13,26 +13,19 @@ featured: true
 
 ```bash
 replicas=6
-bashExec=$false
-sbatchExec=$false
+execType=0
 
-program="/scratch/sroy85/Github/oxDNA/build/bin/oxDNA input"
-
-replicas=6
-bashExec=$false
-sbatchExec=$false
-
-program="/scratch/sroy85/Github/oxDNA/build/bin/oxDNA input"
+program="oxDNA input"
 
 mkdir -p output
 for ((i=1;i<=replicas;i++)); do
     mkdir -p "output/$i"
     rsync -rzvP main/* "output/$i"
     cd "output/$i"
-    if $bashExec ; then
+    if [ "$execType" -eq 1 ]; then
         $program >out.txt &
     fi
-    if $sbatchExec ; then
+    if [ "$execType" -eq 2 ]; then
         sbatch submit.sh
     fi
     cd ../..
@@ -44,4 +37,28 @@ done
 
 ```bash
 
+```
+
+#### To change an input parameter like temperature and running simulation
+
+```bash
+start=0.11
+stop=0.28
+step=0.01
+execType=1
+program="oxDNA input"
+mkdir -p output
+for i in $(seq $start $step $stop); do
+    mkdir -p "output/$i"
+    rsync -rzvP main/* "output/$i"
+    cd "output/$i"
+    echo "T=$i" >> input
+    if [ "$execType" -eq 1 ]; then
+        $program >out.txt &
+    fi
+    if [ "$execType" -eq 2 ]; then
+        sbatch submit.sh
+    fi
+    cd ../..
+done
 ```
