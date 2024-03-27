@@ -91,3 +91,33 @@ alias ninjabuild="cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release; ninja -j 30"
 ```
 
 - quick compilation for programs using cmake.
+
+
+```bash
+checkJob(){
+    status=$(squeue -h -j $1 -o "%T")
+
+    if [[ -z "$status" ]]; then
+        echo "The job $1 has finished"
+        return 1;
+    else
+        case $status in 
+        "RUNNING")
+            echo "The job $1 is running"
+            return 0
+            ;;
+        "PENDING")
+            echo "The job $1 is pending in queue"
+            return 2
+            ;;
+        *)
+            echo "The job $1 is in: $status"
+            return 3
+            ;;
+        esac
+    fi
+}
+```
+
+
+- above function check the status of a job given the jobid as input
