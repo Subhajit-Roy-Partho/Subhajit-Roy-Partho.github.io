@@ -121,3 +121,10 @@ checkJob(){
 
 
 - above function check the status of a job given the jobid as input
+
+
+```bash
+kill $(ps aux | grep "program Name"| grep "2nd cond if needed" | awk '{print $2}')
+```
+
+- above function will kill all the jobs with condition within grep. This is very useful command to kill all the jobs with a specific keywords.

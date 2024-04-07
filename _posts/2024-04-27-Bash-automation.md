@@ -1,8 +1,8 @@
 ---
 layout: post
-title: Useful bash commands and functions
+title: Bash automation
 date: 2024-02-12 00:00:00
-description: Useful bashrc commands that I require to write every time I create a new system.
+description: Automation using bash scripts, the most powerful tool in linux.
 tags: linux bash
 categories: sample-posts
 giscus_comments: true
