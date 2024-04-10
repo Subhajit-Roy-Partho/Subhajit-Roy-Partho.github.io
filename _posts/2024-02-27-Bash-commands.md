@@ -128,3 +128,13 @@ kill $(ps aux | grep "program Name"| grep "2nd cond if needed" | awk '{print $2}
 ```
 
 - above function will kill all the jobs with condition within grep. This is very useful command to kill all the jobs with a specific keywords.
+
+```bash
+find . -type f -exec touch --no-create {} +
+```
+- updates timestamp of all the files, this is useful to preserve files where there is automatic file deletion sytem for older files.
+
+```bash
+cat file1 file2 > file3
+```
+- the above will merge content of file1 and file2 to file 3. Single `>` will replace content in file3 while `>>` will append content to file3.

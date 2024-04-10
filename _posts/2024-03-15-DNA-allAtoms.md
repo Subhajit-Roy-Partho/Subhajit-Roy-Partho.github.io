@@ -13,7 +13,7 @@ featured: true
 
 - Generate the structure of DNA using tools like NAB, CHIMERA etc.
 - Generate the ligand structure using GaussView or Avogardo2
-- Run antechamber to obtain amber suitable structure as prepi or mol2. Then parmchk2 to convert it to simulation format interaction.
+- Run antechamber to obtain amber suitable structure as prepi or mol2 (mol2 is a preferred format). Then parmchk2 to convert it to simulation format interaction.
 
 ```bash
 antechamber -fi pdb -fo prepi -i ligand.pdb -o ligand.prepi -rn LIG -c bcc -at gaff2
