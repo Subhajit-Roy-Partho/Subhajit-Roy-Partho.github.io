@@ -62,3 +62,63 @@ for i in $(seq $start $step $stop); do
     cd ../..
 done
 ```
+
+```bash
+originalDir=$(pwd)
+folders=$(find . -maxdepth 1 -type d)
+
+
+for dir in $folders; do
+    first=1
+    if [ "$dir" == "." ] || [ "$dir" == "./plot" ]; then
+        continue
+    fi
+
+    echo "Entering $dir/output"
+
+    cd "$dir/output"
+    subfolders=$(find . -maxdepth 1 -type d)
+
+    cp  -rf "$originalDir/plot.gnuplot" "./plot.gnuplot"
+    ls
+    sed -i "s/folder/${dir:2}/g" "./plot.gnuplot"
+    for subdir in $subfolders; do
+        if [ "$subdir" == "." ]; then
+            continue
+        fi
+        if [ "$first" == "1" ]; then
+            sed -i "s/#plottingHere/plot '${subdir:2}\/energy.ign' w l title '${subdir:2}'\n#plottingHere/g" "./plot.gnuplot"
+            first=0
+        else
+            sed -i "s/#plottingHere/replot '${subdir:2}\/energy.ign' w l title '${subdir:2}'\n#plottingHere/g" "./plot.gnuplot"
+        fi
+    done
+    gnuplot plot.gnuplot
+    cd "$originalDir"
+    echo ""
+done
+```
+
+```bash
+set terminal pngcairo size 1024,768
+
+# Set the output file name
+set output '../../plot/folder.png'
+
+set logscale x
+set yrange [:3]
+# Set title and labels (optional)
+set title 'Plot for folder'
+set xlabel 'X in log SU'
+set ylabel 'Y in linear SU'
+
+# Plot the data
+# Assuming the data file is named 'data.dat', and you want to plot column 1 as X and column 2 as Y
+#plottingHere
+
+# Unset output to finalize the file
+unset output
+set output '../../plot/folder.png'
+replot
+unset output
+```
