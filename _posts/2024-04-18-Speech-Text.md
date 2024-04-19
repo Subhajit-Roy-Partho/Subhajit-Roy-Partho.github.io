@@ -29,4 +29,4 @@ featured: true
 ## References
 
 - For code and all the details [Whisper Github](https://github.com/openai/whisper).
-- [OpenAi Research](https://openai.com/research/whisper)ggghhjjklhyyyyyhhhyyyyy
+- [OpenAi Research](https://openai.com/research/whisper)
