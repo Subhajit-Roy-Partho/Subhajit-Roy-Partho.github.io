@@ -51,7 +51,7 @@ server(){
 
 
 ```bash
-asu(){
+function asu(){
     if [ $# -eq 0 ];then
         echo "password\npush\n"|sudo openconnect -u user --server=sslvpn.asu.edu
     elif [ $# -eq 1 ];then
