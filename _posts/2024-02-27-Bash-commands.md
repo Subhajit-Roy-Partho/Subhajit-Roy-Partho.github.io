@@ -126,6 +126,11 @@ checkJob(){
 ```bash
 kill $(ps aux | grep "program Name"| grep "2nd cond if needed" | awk '{print $2}')
 ```
+- similarly to kill jobs running on nvidia gpus
+
+```bash
+kill $( nvidia-smi | grep "program Name"| grep "2nd condititon" | awk '{print $5}')
+```
 
 - above function will kill all the jobs with condition within grep. This is very useful command to kill all the jobs with a specific keywords.
 
