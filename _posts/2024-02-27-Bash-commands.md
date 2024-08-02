@@ -87,7 +87,7 @@ gi(){
 - short function to do git stuff.
 
 ```bash
-alias ninjabuild="cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release; ninja -j 30"
+alias ninjabuild="cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release; ninja"
 ```
 
 - quick compilation for programs using cmake.

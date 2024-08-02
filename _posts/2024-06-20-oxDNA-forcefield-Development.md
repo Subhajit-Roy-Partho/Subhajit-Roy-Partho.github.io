@@ -1,8 +1,8 @@
 ---
 layout: post
-title: GNUplot commands
+title: oxDNA Forcefield Development
 date: 2024-06-20 00:00:00
-description: GNUplot useful commands
+description: Developing a custom forcefield in oxDNA
 tags: plot linux
 categories: sample-posts
 giscus_comments: true

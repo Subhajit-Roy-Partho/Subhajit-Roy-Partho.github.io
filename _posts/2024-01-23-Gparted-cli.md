@@ -9,6 +9,10 @@ giscus_comments: true
 featured: true
 ---
 
+### Installation
+
+- `sudo apt install parted` in debian
+
 Useful parted cli commands:
 
 - `print` - print the full configuration.
@@ -20,8 +24,6 @@ Useful other disk management commands:
 
 - `lsblk` and `fdisk -l` shows disk configuration for all the disks.
 - `sudo mkfs.btrfs -f /dev/sda1` to create the final btrfs partition for sda1 partition. This is not always needed if parted does it by default.
-- `sudo blkid` to obtain all the uuid of the disks.
-- `/etc/fstab` fstab file needs to be appended with the new partition configuration if one wants to mount the partition automatically during restart.
 
 Validate settings:
 
@@ -31,6 +33,14 @@ User management:
 
 - `sudo useradd -m -d /home/subho -s /bin/bash -G standard,admin subho` to add user subho with home location /home/subho, default shell as bash and add to group standard,admin.
 - `sudo passwd subho` to change or create password for user subho.
+
+#### Permanent Mount
+
+- To mount a drive during restart one need to make the mount entry to /etc/fstab
+- Obtain the UUID from `lsblk -f` or `sudo blkid`
+- `UUID=0f2b8e50-94c0-4385-abed-ce020da2555b /fast           btrfs   defaults        0       0` something of this format
+- `systemctl daemon-reload` in debian to reload the fstab settings
+- *To temporary mount use `sudo mount /dev/sdb1` and to unmount `sudo umount /mnt/loc`*
 
 ### Conclusion
 
