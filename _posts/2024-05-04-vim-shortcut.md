@@ -22,7 +22,6 @@ featured: true
 - end `gc` to confirm each substitution.
 - end `gi` to ignore case sensitivity.
 
-
 #### Comment multiple lines
 
 #### Fold lines
