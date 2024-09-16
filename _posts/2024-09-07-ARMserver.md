@@ -17,8 +17,16 @@ featured: true
     3. Arch
     4. Ubuntu (May even damage firmware)
 
+### Useful Software
+
+##### Desktop Environments
+
+- Xfce is one of the best and easy to configure desktop environment.
+- To install it `sudo apt install xfce4`
+- to start it `startxfce4` from tty terminal.
 
 ### Fixes
+
 ##### SLURM GPU segregation fix
 
 Slurm uses nvml to detect the number of gpus, segregate them during running, and this api was not working for my case.
