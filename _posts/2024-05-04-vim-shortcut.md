@@ -28,4 +28,81 @@ featured: true
 
 `:set foldmethod=indent` folds all the lines by indentation
 
-## Installation 
+## Neo Vim for C++
+- Install Mason.nvim
+  - Add `M.plugins = "custom.plugins"` to chadrc.lua under ~/.config/nvim/lua/custom
+  - Create a new file here using a key in file tree plugins.lua, edit the following
+  ```bash
+  local plugins = {
+    {
+      "williamboman/mason.nvim",
+      opts = {
+        ensure_installed = {
+          "clangd"
+        }
+      }
+    }
+  }
+return plugins
+  ```
+  - Close and reopen nvim and run `MasonInstallAll
+  - Now add custom lspconfig to mason and final result would look like
+  ```bash
+  local plugins = {
+    {
+      "neovim/nvim-lspconfig",
+      config = function ()
+        require "plugins.configs.lspconfig"
+        require "custom.configs.lspconfig"
+      end
+    },
+    {
+      "williamboman/mason.nvim",
+      opts = {
+        ensure_installed = {
+          "clangd"
+        }
+      }
+    }
+  }
+  return plugins
+
+  ```
+
+  - create the lspconfig.lua inside custom/configs
+  - The files looks as given below
+    ```bash
+    local base = require("plugins.configs.lspconfig")
+    local on_attach = base.on_attach
+    local capabilities = base.capabilities
+    
+    local lspconfig = require("lspconfig")
+    
+    lspconfig.clangd.setup{
+      on_attach = function (client,bufnr)
+        client.server_capabilities.signatureHelpProvider=false
+        on_attach(client,bufnr)
+      end,
+      capabilities=capabilities,
+    }
+    ```
+
+    - exit and enter and do `TSInstall cpp`
+   
+
+    Final result
+
+    - custom/configs/null-ls.lua
+    ```bash
+    local null_ls = require("null_ls")
+
+    local opts = {
+      sources = {
+        null_ls.builtins.formatting.clang_format,
+      }
+    }
+    
+    return opts
+    ```
+    
+
