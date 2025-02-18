@@ -79,3 +79,11 @@ int main() {
     return 0;
 }
 ```
+
+### Nvidia kernel stuff
+- To rebuild the kernel simply `sudo akmods --force`
+- Logs should be in `/var/cache/akmods/nvidia/{Kernel Version}`
+- Check kernel version with `uname -srm`
+
+### Bad ideas
+- Never change /usr/bin/gcc to /usr/bin/gcc-13 from default gcc-14 (or whatever your version is). Same for g++. It breaks core system files including nvidia drivers akmod.
