@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Linux system setup
-date: 2023-10-09 00:00:00
+date: 2025-05-23 00:00:00
 description: Code to setup complete linux system from scratch.
 tags: compilation tensorflow ml fun
 categories: sample-posts
@@ -21,8 +21,8 @@ featured: true
   <div id="arch" class="tab-content" style="display:block;">
     <h3>Arch Linux</h3>
     <pre><code class="language-bash">
-# To add 'myuser' to the 'wheel' group
-sudo usermod -aG wheel myuser
+    sudo pacman -Syu gcc make cmake python3 python-pip git wget nvim zsh
+    sudo chsh -s $(which zsh) $(whoami)
 
 # Then, ensure visudo has:
 # %wheel ALL=(ALL:ALL) ALL
@@ -126,4 +126,22 @@ sudo usermod -aG wheel myuser
   // });
 </script>
 
-Some text after the tabs.
+## oh-my-zsh installation
+```bash
+## Install oh-my-zsh
+sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
+
+## Install plugins
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+
+## Replace the default plugins with the following
+sed -i.bak '/^plugins=.*/c\
+plugins=(\
+  git\
+  zsh-syntax-highlighting\
+  zsh-autosuggestions\
+  zsh-history-substring-search\
+)' ~/.zshrc
+```
