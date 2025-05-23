@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://subhajit-roy-partho.github.io/feed.xml" rel="self" type="application/atom+xml"/><link href="https://subhajit-roy-partho.github.io/" rel="alternate" type="text/html" hreflang="en"/><updated>2025-05-23T22:07:58+00:00</updated><id>https://subhajit-roy-partho.github.io/feed.xml</id><title type="html">blank</title><subtitle>I am a PhD student at Petr Sulc&apos;s Lab, Arizona State University. I am currently persuing computational biophysics with focus on self assembly of genetic materials. I am highly invested in developing coarse grain model of DNA which would allow us to study these assembly at a much quicker pace, otherwise impossible with atomistic approach. I also work with Machine Learning models that could even simplify our life by predicting desired properties without even going through computationally intensive simulations where ever possible. I undertook other application based project like dna cryptography and storage. </subtitle><entry><title type="html">Linux system setup</title><link href="https://subhajit-roy-partho.github.io/blog/2025/linux-system-setup/" rel="alternate" type="text/html" title="Linux system setup"/><published>2025-05-23T00:00:00+00:00</published><updated>2025-05-23T00:00:00+00:00</updated><id>https://subhajit-roy-partho.github.io/blog/2025/linux-system-setup</id><content type="html" xml:base="https://subhajit-roy-partho.github.io/blog/2025/linux-system-setup/"><![CDATA[<h2 id="basic-installations">Basic Installations</h2> <div class="tabs-container"> <div class="tab-buttons"> <button class="tab-button active" onclick="openTab(event, 'arch')">Arch Linux</button> <button class="tab-button" onclick="openTab(event, 'debian')">Debian/Ubuntu</button> <button class="tab-button" onclick="openTab(event, 'fedora')">Fedora</button> </div> <div id="arch" class="tab-content" style="display:block;"> <h3>Arch Linux</h3> <pre><code class="language-bash">
-    sudo pacman -Syu gcc make cmake python3 python-pip git wget nvim zsh
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://subhajit-roy-partho.github.io/feed.xml" rel="self" type="application/atom+xml"/><link href="https://subhajit-roy-partho.github.io/" rel="alternate" type="text/html" hreflang="en"/><updated>2025-05-23T23:51:51+00:00</updated><id>https://subhajit-roy-partho.github.io/feed.xml</id><title type="html">blank</title><subtitle>I am a PhD student at Petr Sulc&apos;s Lab, Arizona State University. I am currently persuing computational biophysics with focus on self assembly of genetic materials. I am highly invested in developing coarse grain model of DNA which would allow us to study these assembly at a much quicker pace, otherwise impossible with atomistic approach. I also work with Machine Learning models that could even simplify our life by predicting desired properties without even going through computationally intensive simulations where ever possible. I undertook other application based project like dna cryptography and storage. </subtitle><entry><title type="html">Linux system setup</title><link href="https://subhajit-roy-partho.github.io/blog/2025/linux-system-setup/" rel="alternate" type="text/html" title="Linux system setup"/><published>2025-05-23T00:00:00+00:00</published><updated>2025-05-23T00:00:00+00:00</updated><id>https://subhajit-roy-partho.github.io/blog/2025/linux-system-setup</id><content type="html" xml:base="https://subhajit-roy-partho.github.io/blog/2025/linux-system-setup/"><![CDATA[<h2 id="basic-installations">Basic Installations</h2> <div class="tabs-container"> <div class="tab-buttons"> <button class="tab-button active" onclick="openTab(event, 'arch')">Arch Linux</button> <button class="tab-button" onclick="openTab(event, 'debian')">Debian/Ubuntu</button> <button class="tab-button" onclick="openTab(event, 'fedora')">Fedora</button> </div> <div id="arch" class="tab-content" style="display:block;"> <h3>Arch Linux</h3> <pre><code class="language-bash">
+    sudo pacman -Syu gcc make cmake python3 python-pip git wget nvim zsh cloudflared openssh rsync rclone
     sudo chsh -s $(which zsh) $(whoami)
 
 # Then, ensure visudo has:
@@ -28,6 +28,45 @@ plugins=(\
   zsh-autosuggestions\
   zsh-history-substring-search\
 )'</span> ~/.zshrc
+</code></pre></div></div> <h2 id="generate-ssh-keys">Generate SSH keys</h2> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh-keygen <span class="nt">-t</span> ed25519 <span class="nt">-C</span> <span class="s2">"pc"</span>
+<span class="nb">cat</span> ~/.ssh/id_ed25519.pub
+</code></pre></div></div> <h2 id="add-servers">Add servers</h2> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> ~/.ssh
+<span class="nb">echo</span> <span class="s2">"Host gila
+        Hostname gila.navraj.me
+        User gila
+        Port 22
+        ProxyCommand cloudflared access ssh --hostname %h
+Host sol
+        Hostname sol.asu.edu
+        User sroy85
+        Port 22
+        ProxyJump gila"</span> <span class="o">&gt;&gt;</span> ~/.ssh/config
+    
+</code></pre></div></div> <h2 id="add-zshrc-functions">Add zshrc functions</h2> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mo<span class="o">()</span> <span class="o">{</span>
+  <span class="c"># Check if an argument was provided</span>
+  <span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">echo</span> <span class="s2">"Usage: mo &lt;directory_name&gt;"</span>
+    <span class="k">return </span>1 <span class="c"># Indicate an error</span>
+  <span class="k">fi</span>
+
+  <span class="c"># Attempt to create the directory.</span>
+  <span class="c"># -p: no error if existing, make parent directories as needed</span>
+  <span class="c"># --: ensures that $1 isn't misinterpreted as an option if it starts with '-'</span>
+  <span class="k">if </span><span class="nb">mkdir</span> <span class="nt">-p</span> <span class="nt">--</span> <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span><span class="p">;</span> <span class="k">then</span>
+    <span class="c"># If mkdir was successful, try to cd into it</span>
+    <span class="k">if </span><span class="nb">cd</span> <span class="nt">--</span> <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span><span class="p">;</span> <span class="k">then
+      return </span>0 <span class="c"># Success</span>
+    <span class="k">else
+      </span><span class="nb">echo</span> <span class="s2">"Error: Successfully created directory '</span><span class="nv">$1</span><span class="s2">', but could not cd into it."</span> <span class="o">&gt;</span>&amp;2
+      <span class="k">return </span>1 <span class="c"># Indicate an error</span>
+    <span class="k">fi
+  else</span>
+    <span class="c"># mkdir failed. mkdir itself usually prints an error.</span>
+    <span class="c"># We can add a generic one too.</span>
+    <span class="nb">echo</span> <span class="s2">"Error: Could not create directory '</span><span class="nv">$1</span><span class="s2">'."</span> <span class="o">&gt;</span>&amp;2
+    <span class="k">return </span>1 <span class="c"># Indicate an error</span>
+  <span class="k">fi</span>
+<span class="o">}</span>
 </code></pre></div></div>]]></content><author><name></name></author><category term="sample-posts"/><category term="compilation"/><category term="tensorflow"/><category term="ml"/><category term="fun"/><summary type="html"><![CDATA[Code to setup complete linux system from scratch.]]></summary></entry><entry><title type="html">All atom MD simulation of DNA with small molecule</title><link href="https://subhajit-roy-partho.github.io/blog/2024/all-atom-DNA-simulation/" rel="alternate" type="text/html" title="All atom MD simulation of DNA with small molecule"/><published>2024-10-01T00:00:00+00:00</published><updated>2024-10-01T00:00:00+00:00</updated><id>https://subhajit-roy-partho.github.io/blog/2024/all-atom-DNA-simulation</id><content type="html" xml:base="https://subhajit-roy-partho.github.io/blog/2024/all-atom-DNA-simulation/"><![CDATA[<h2 id="avogadro">Avogadro</h2>]]></content><author><name></name></author><category term="sample-posts"/><category term="coding"/><summary type="html"><![CDATA[A description on how to simulate DNA duplex with small molecules covalently attached at different positions]]></summary></entry><entry><title type="html">ZSH terminal</title><link href="https://subhajit-roy-partho.github.io/blog/2024/zsh-terminal/" rel="alternate" type="text/html" title="ZSH terminal"/><published>2024-09-15T00:00:00+00:00</published><updated>2024-09-15T00:00:00+00:00</updated><id>https://subhajit-roy-partho.github.io/blog/2024/zsh-terminal</id><content type="html" xml:base="https://subhajit-roy-partho.github.io/blog/2024/zsh-terminal/"><![CDATA[<ul> <li>Install oh my zsh <code class="language-plaintext highlighter-rouge">sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"</code>.</li> <li>Change theme to avit in ~/.zshrc</li> <li>Plugins: <ul> <li>zsh-syntax-highlighting <code class="language-plaintext highlighter-rouge">git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting</code></li> <li>zsh-autosuggestions <code class="language-plaintext highlighter-rouge">git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions</code></li> <li>add the puligins to</li> </ul> <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="nv">plugins</span><span class="o">=(</span>git
   zsh-syntax-highlighting
   zsh-autosuggestions
