@@ -21,7 +21,7 @@ featured: true
   <div id="arch" class="tab-content" style="display:block;">
     <h3>Arch Linux</h3>
     <pre><code class="language-bash">
-    sudo pacman -Syu gcc make cmake python3 python-pip git wget nvim zsh
+    sudo pacman -Syu gcc make cmake python3 python-pip git wget nvim zsh cloudflared openssh rsync rclone
     sudo chsh -s $(which zsh) $(whoami)
 
 # Then, ensure visudo has:
@@ -144,4 +144,55 @@ plugins=(\
   zsh-autosuggestions\
   zsh-history-substring-search\
 )' ~/.zshrc
+```
+
+## Generate SSH keys
+```bash
+ssh-keygen -t ed25519 -C "pc"
+cat ~/.ssh/id_ed25519.pub
+```
+
+## Add servers
+```bash
+mkdir -p ~/.ssh
+echo "Host gila
+        Hostname gila.navraj.me
+        User gila
+        Port 22
+        ProxyCommand cloudflared access ssh --hostname %h
+Host sol
+        Hostname sol.asu.edu
+        User sroy85
+        Port 22
+        ProxyJump gila" >> ~/.ssh/config
+    
+```
+
+## Add zshrc functions
+```bash
+mo() {
+  # Check if an argument was provided
+  if [ -z "$1" ]; then
+    echo "Usage: mo <directory_name>"
+    return 1 # Indicate an error
+  fi
+
+  # Attempt to create the directory.
+  # -p: no error if existing, make parent directories as needed
+  # --: ensures that $1 isn't misinterpreted as an option if it starts with '-'
+  if mkdir -p -- "$1"; then
+    # If mkdir was successful, try to cd into it
+    if cd -- "$1"; then
+      return 0 # Success
+    else
+      echo "Error: Successfully created directory '$1', but could not cd into it." >&2
+      return 1 # Indicate an error
+    fi
+  else
+    # mkdir failed. mkdir itself usually prints an error.
+    # We can add a generic one too.
+    echo "Error: Could not create directory '$1'." >&2
+    return 1 # Indicate an error
+  fi
+}
 ```
