@@ -35,3 +35,10 @@ These structure could be simulated with MC then MD with restrains and finally pr
 
 For simualtion we would need the .top, .dat and .txt force file and need to write a input file as given below.
 
+#### MD Simulation 1 - Restrains + Max Backbone Force
+
+
+#### MD Simulation 2 - High Max Backbone Force
+
+
+#### MD Simulation - Production
