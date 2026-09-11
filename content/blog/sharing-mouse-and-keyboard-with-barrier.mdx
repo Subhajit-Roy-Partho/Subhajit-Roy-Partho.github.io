@@ -1,0 +1,24 @@
+---
+title: "Sharing Mouse & Keyboard with Barrier"
+date: "2024-09-15"
+description: "Generating a self-signed SSL cert for Barrier so one keyboard and mouse can control multiple machines."
+tags: ["linux", "networking", "productivity"]
+categories: ["misc"]
+toc: true
+---
+
+[Barrier](https://github.com/debauchee/barrier) lets one keyboard and mouse control several computers over the network.
+
+1. Install it via your package manager, or build it from the GitHub repo.
+2. Generate a self-signed SSL certificate at `.local/share/barrier/SSL` (either under `/home/$USER` or `/home/$USER/snap/barrier-*/2`):
+
+```bash
+cd "SSL path"
+mkdir -p Fingerprints
+openssl req -x509 -nodes -days 365 -subj /CN=barrier -newkey rsa:4096 -keyout Barrier.pem -out Barrier.pem
+openssl x509 -fingerprint -sha256 -noout -in Barrier.pem > Fingerprints/Local.txt
+sed -e "s/.*=/v2:sha256:/" -i Fingerprints/Local.txt
+```
+
+3. On the server, configure the screen layout by dragging the new PC to the left or right of the current one, then start the server.
+4. On the client, connect using the server's IP. If everything's set up correctly, the client will show the server's SSL fingerprint and prompt that the configuration is ready.

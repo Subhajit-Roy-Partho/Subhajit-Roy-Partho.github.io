@@ -1,0 +1,99 @@
+---
+title: "Vim Commands & Neovim C++ Setup"
+date: "2024-05-04"
+description: "Search-and-replace patterns worth memorizing, plus wiring up NvChad with Mason and clangd for C++ development."
+tags: ["vim", "neovim", "editor"]
+categories: ["infrastructure"]
+toc: true
+---
+
+## Useful vim commands
+
+### Search and replace
+
+- `:s/search/replace/` — current line, first occurrence.
+- `:s/search/replace/g` — current line, all occurrences.
+- `:%s/search/replace/g` — entire file.
+- `:3,10s/search/replace/g` — lines 3 through 10.
+- `:.,+4s/search/replace/g` — current line through the next 4 lines.
+- `:.,$s/search/replace/` — current line to end of file.
+- Append `gc` to confirm each substitution individually.
+- Append `gi` to ignore case.
+
+### Folding
+
+`:set foldmethod=indent` folds lines by indentation.
+
+## Neovim for C++ (NvChad)
+
+1. Install `mason.nvim`. Add `M.plugins = "custom.plugins"` to `chadrc.lua` under `~/.config/nvim/lua/custom`.
+2. Create a plugins file and ensure `clangd` gets installed:
+
+```lua
+local plugins = {
+  {
+    "williamboman/mason.nvim",
+    opts = {
+      ensure_installed = { "clangd" }
+    }
+  }
+}
+return plugins
+```
+
+3. Reopen Neovim and run `:MasonInstallAll`.
+
+4. Wire `clangd` into `nvim-lspconfig`:
+
+```lua
+local plugins = {
+  {
+    "neovim/nvim-lspconfig",
+    config = function()
+      require "plugins.configs.lspconfig"
+      require "custom.configs.lspconfig"
+    end
+  },
+  {
+    "williamboman/mason.nvim",
+    opts = {
+      ensure_installed = { "clangd" }
+    }
+  }
+}
+return plugins
+```
+
+5. Create `custom/configs/lspconfig.lua`:
+
+```lua
+local base = require("plugins.configs.lspconfig")
+local on_attach = base.on_attach
+local capabilities = base.capabilities
+
+local lspconfig = require("lspconfig")
+
+lspconfig.clangd.setup{
+  on_attach = function(client, bufnr)
+    client.server_capabilities.signatureHelpProvider = false
+    on_attach(client, bufnr)
+  end,
+  capabilities = capabilities,
+}
+```
+
+6. Exit and re-enter Neovim, then run `:TSInstall cpp`.
+
+7. For formatting, add a `null-ls` source at `custom/configs/null-ls.lua`:
+
+```lua
+local null_ls = require("null_ls")
+
+local opts = {
+  sources = {
+    null_ls.builtins.formatting.clang_format,
+  }
+}
+
+return opts
+```

@@ -1,0 +1,31 @@
+---
+title: "Cogli2 Build Requirements"
+date: "2024-05-23"
+description: "The Ubuntu and conda dependencies Cogli2 needs, and the CMake snippet for pointing it at a conda environment."
+tags: ["linux", "build", "visualization"]
+categories: ["infrastructure"]
+toc: false
+---
+
+## Ubuntu libraries
+
+- `libxrandr-dev`
+- `libxi-dev`
+- `libxxf86vm-dev`
+- `libxinerama-dev`
+- `libxcursor-dev`
+
+## Conda packages
+
+- `conda-forge::xorg-libxxf86vm`
+
+## Pointing CMake at a conda environment
+
+```cmake
+if(CONDA)
+    include_directories("~/miniconda3/include")
+    link_directories("~/miniconda3/lib")
+endif(CONDA)
+```
+
+Adjust the path to match your actual conda installation.

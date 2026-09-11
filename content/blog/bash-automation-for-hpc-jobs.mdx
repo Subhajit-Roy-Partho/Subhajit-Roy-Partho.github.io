@@ -1,0 +1,202 @@
+---
+title: "Bash Automation for HPC Job Management"
+date: "2024-04-27"
+description: "Scripts for launching oxDNA replicas, auto-resuming jobs that die on a private SLURM queue, and sweeping a parameter before batch-plotting the results."
+tags: ["bash", "slurm", "oxdna", "hpc"]
+categories: ["infrastructure"]
+toc: true
+---
+
+Bash automation is one of the most useful tools in an HPC workflow. A few scripts I keep reaching for:
+
+## Submitting multiple replicas of a job
+
+```bash
+replicas=6
+execType=0
+
+program="oxDNA input"
+
+mkdir -p output
+for ((i=1;i<=replicas;i++)); do
+    mkdir -p "output/$i"
+    rsync -rzvP main/* "output/$i"
+    cd "output/$i"
+    if [ "$execType" -eq 1 ]; then
+        $program >out.txt &
+    fi
+    if [ "$execType" -eq 2 ]; then
+        sbatch submit.sh
+    fi
+    cd ../..
+done
+```
+
+## Auto-resuming jobs on a private queue
+
+A watchdog script, run periodically (e.g. from cron), checks whether tracked jobs have died and resubmits them if so.
+
+```bash
+checkJob(){
+    status=$(squeue -h -j $1 -o "%T")
+
+    if [[ -z "$status" ]]; then
+        echo "The job $1 has finished"
+        return 1
+    else
+        case $status in
+        "RUNNING")
+            echo "The job $1 is running"
+            return 0
+            ;;
+        "PENDING")
+            echo "The job $1 is pending in queue"
+            return 2
+            ;;
+        *)
+            echo "The job $1 is in: $status"
+            return 3
+            ;;
+        esac
+    fi
+}
+
+curretDir=$(pwd)
+
+while IFS="*" read -ra p || [ -n "$p" ]; do
+    checkJob ${p[0]}
+    status=$?
+    if [[ $status -eq 1 ]]; then
+        echo "Restarting the job"
+        cd ${p[1]}
+        eval ${p[2]}
+    fi
+done < jobs.txt
+```
+
+`jobs.txt` holds one `jobID*scriptLocation*command` triple per line, e.g.:
+
+```text
+15169644*/scratch/sroy85/PHBdna2/duplex/5T/subResume.sh*"sbatch subResume.sh"
+15080501*/scratch/sroy85/PHBdna2/duplex/*"sbatch subResume.sh"
+```
+
+And the resume script it calls:
+
+```bash
+#!/bin/sh
+#SBATCH -q private
+#SBATCH -p general
+#SBATCH -G a100:1
+#SBATCH -t 5-00:00
+#SBATCH -c 20
+#SBATCH -o code.out
+#SBATCH -e code.err
+
+module load cuda-11.7.0-gcc-11.2.0 gcc-11.2.0-gcc-11.2.0 cmake eigen-3.4.0-gcc-11.2.0
+
+export CUDA_MPS_PIPE_DIRECTORY=/tmp/mps-pipe_$SLURM_TASK_PID
+export CUDA_MPS_LOG_DIRECTORY=/tmp/mps-log_$SLURM_TASK_PID
+mkdir -p $CUDA_MPS_PIPE_DIRECTORY
+mkdir -p $CUDA_MPS_LOG_DIRECTORY
+nvidia-cuda-mps-control -d
+
+program="oxDNA input"
+add="\nrefresh_vel = 0"
+replicas=6
+
+dir=("10T","15T","20T")
+for folder in "${dir[@]}"; do
+    cd $folder
+    for((i=1;i<=$replicas;i++)); do
+        cd "output/$i"
+        echo $add >> inputProd
+        /scratch/sroy85/Github/oxDNA/build/bin/oxDNA inputProd >outProd.txt 2>&1 &
+        cd ../..
+    done
+    cd ..
+done
+
+wait
+```
+
+## Sweeping a parameter (e.g. temperature)
+
+```bash
+start=0.11
+stop=0.28
+step=0.01
+execType=1
+program="oxDNA input"
+mkdir -p output
+for i in $(seq $start $step $stop); do
+    mkdir -p "output/$i"
+    rsync -rzvP main/* "output/$i"
+    cd "output/$i"
+    echo "T=$i" >> input
+    if [ "$execType" -eq 1 ]; then
+        $program >out.txt &
+    fi
+    if [ "$execType" -eq 2 ]; then
+        sbatch submit.sh
+    fi
+    cd ../..
+done
+```
+
+## Batch-plotting every sweep with gnuplot
+
+This walks every output folder, drops in a templated `plot.gnuplot`, and appends one `plot`/`replot` line per subfolder before running it.
+
+```bash
+originalDir=$(pwd)
+folders=$(find . -maxdepth 1 -type d)
+
+for dir in $folders; do
+    first=1
+    if [ "$dir" == "." ] || [ "$dir" == "./plot" ]; then
+        continue
+    fi
+
+    echo "Entering $dir/output"
+
+    cd "$dir/output"
+    subfolders=$(find . -maxdepth 1 -type d)
+
+    cp -rf "$originalDir/plot.gnuplot" "./plot.gnuplot"
+    sed -i "s/folder/${dir:2}/g" "./plot.gnuplot"
+    for subdir in $subfolders; do
+        if [ "$subdir" == "." ]; then
+            continue
+        fi
+        if [ "$first" == "1" ]; then
+            sed -i "s/#plottingHere/plot '${subdir:2}\/energy.ign' w l title '${subdir:2}'\n#plottingHere/g" "./plot.gnuplot"
+            first=0
+        else
+            sed -i "s/#plottingHere/replot '${subdir:2}\/energy.ign' w l title '${subdir:2}'\n#plottingHere/g" "./plot.gnuplot"
+        fi
+    done
+    gnuplot plot.gnuplot
+    cd "$originalDir"
+done
+```
+
+The templated `plot.gnuplot` it fills in:
+
+```gnuplot
+set terminal pngcairo size 1024,768
+set output '../../plot/folder.png'
+
+set logscale x
+set yrange [:3]
+set title 'Plot for folder'
+set xlabel 'X in log SU'
+set ylabel 'Y in linear SU'
+
+#plottingHere
+
+unset output
+set output '../../plot/folder.png'
+replot
+unset output
+```

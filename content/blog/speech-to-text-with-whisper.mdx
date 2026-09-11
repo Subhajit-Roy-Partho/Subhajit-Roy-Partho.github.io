@@ -1,0 +1,45 @@
+---
+title: "Speech-to-Text with Whisper"
+date: "2024-04-18"
+description: "Installing OpenAI's Whisper and picking the right model size for the VRAM you actually have."
+tags: ["ml", "whisper", "audio"]
+categories: ["ml"]
+toc: true
+---
+
+## Usage
+
+- Install Miniconda and CUDA locally, or just run it on a GPU via Kaggle/Colab.
+- Install `ffmpeg`.
+- Install Whisper straight from GitHub:
+
+```bash
+pip install git+https://github.com/openai/whisper.git
+```
+
+To update an existing installation:
+
+```bash
+pip install --upgrade --no-deps --force-reinstall git+https://github.com/openai/whisper.git
+```
+
+Run it:
+
+```bash
+whisper audio.ext --language English --model large -o OutputFolder
+```
+
+For English audio, the `.en` variants (`medium.en`, `small.en`, `tiny.en`) outperform their multilingual counterparts of the same size.
+
+| Size | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |
+| --- | --- | --- | --- | --- | --- |
+| tiny | 39 M | `tiny.en` | `tiny` | ~1 GB | ~32x |
+| base | 74 M | `base.en` | `base` | ~1 GB | ~16x |
+| small | 244 M | `small.en` | `small` | ~2 GB | ~6x |
+| medium | 769 M | `medium.en` | `medium` | ~5 GB | ~2x |
+| large | 1550 M | N/A | `large` | ~10 GB | 1x |
+
+**References**
+
+- [Whisper — GitHub](https://github.com/openai/whisper)
+- [OpenAI research post](https://openai.com/research/whisper)

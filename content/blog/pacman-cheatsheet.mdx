@@ -1,0 +1,17 @@
+---
+title: "Pacman Cheatsheet"
+date: "2024-03-15"
+description: "The four pacman commands I actually use on Arch: install, clean the cache, uninstall completely, and prune orphans."
+tags: ["arch", "linux", "pacman"]
+categories: ["infrastructure"]
+toc: false
+---
+
+- Install: `pacman -S package`
+- Clean the whole package cache: `pacman -Scc`
+- Uninstall completely (including config files and unneeded deps): `pacman -Rcns package`
+- Remove all orphaned packages (pacman's equivalent of `apt autoremove`):
+
+```bash
+sudo pacman -Rcns $(pacman -Qdtq)
+```

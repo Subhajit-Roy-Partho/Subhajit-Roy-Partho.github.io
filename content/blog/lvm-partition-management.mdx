@@ -1,0 +1,38 @@
+---
+title: "LVM Partition Management"
+date: "2024-01-15"
+description: "Extending an LVM partition without downtime: the fdisk/lvs/lvextend/resize2fs sequence, and when to reach for LVM over BTRFS."
+tags: ["linux", "disk", "lvm"]
+categories: ["infrastructure"]
+toc: true
+---
+
+A basic operation that comes up often: extending the size of an LVM partition.
+
+Check the current disk configuration with `fdisk -l`, `lsblk`, `vgs`, `pvs`. Changes should target the `/dev/mapper` entry — there's no need to touch `/dev/sd*` or `/dev/nvme*` directly.
+
+```bash
+lvextend --size 236G /dev/mapper/ubuntu--vg-ubuntu--lv
+```
+
+Then grow the filesystem to match:
+
+```bash
+resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
+```
+
+Verify with:
+
+```bash
+df -h
+```
+
+## Conclusion
+
+LVM is a great tool if you want robust, if unglamorous, dynamic partition management. BTRFS is simpler to work with, but can cost more CPU than LVM+ext4 — which is why many people still prefer LVM for server systems.
+
+**References**
+
+- [Resize an LVM the simple way — Red Hat](https://www.redhat.com/sysadmin/resize-lvm-simple)
+- [How to resize/expand an Ubuntu LVM disk](https://kb.vander.host/disk-management/how-to-resize-expand-an-ubuntu-lvm-disk/)
+- [Choosing between BTRFS and LVM+ext4 — Fedora Magazine](https://fedoramagazine.org/choose-between-btrfs-and-lvm-ext4/)

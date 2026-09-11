@@ -1,0 +1,57 @@
+---
+title: "Disk Management with parted"
+date: "2024-01-23"
+description: "Creating and formatting partitions with parted, verifying mounts, and making them permanent via /etc/fstab."
+tags: ["linux", "disk", "parted"]
+categories: ["infrastructure"]
+toc: true
+---
+
+## Installation
+
+```bash
+sudo apt install parted
+```
+
+## Useful `parted` commands
+
+- `print` — print the full partition table.
+- `select DEVICE` — switch to a different device to edit.
+- `mklabel gpt` — create a GPT label on the partition table.
+- `mkpart primary btrfs 1MiB 100%` — create a primary partition formatted as BTRFS, spanning from 1MiB to the end of the disk.
+
+## Other useful disk management commands
+
+- `lsblk` and `fdisk -l` — show the disk configuration for every disk.
+- `sudo mkfs.btrfs -f /dev/sda1` — format `sda1` as BTRFS (not always necessary if `parted` already did it).
+
+Validate the result with `df -h`, which lists every mount point.
+
+## Making a mount permanent
+
+To have a drive mount automatically on boot, add an entry to `/etc/fstab`:
+
+1. Get the partition's UUID with `lsblk -f` or `sudo blkid`.
+2. Add a line in this format:
+
+```text
+UUID=0f2b8e50-94c0-4385-abed-ce020da2555b /fast  btrfs  defaults  0  0
+```
+
+3. Reload the config with `systemctl daemon-reload`.
+
+<Callout type="tip">
+  To mount or unmount a drive temporarily without touching `/etc/fstab`: `sudo mount /dev/sdb1` and `sudo umount /mnt/loc`.
+</Callout>
+
+For adding users and groups to control who can access a mount, see [Linux User & Group Management](/blog/linux-user-and-group-management).
+
+## Conclusion
+
+`parted` is the most capable partition tool available at the terminal — used carefully, it can save a lot of time over GUI tools.
+
+**References**
+
+- [Resize an LVM the simple way — Red Hat](https://www.redhat.com/sysadmin/resize-lvm-simple)
+- [How to resize/expand an Ubuntu LVM disk](https://kb.vander.host/disk-management/how-to-resize-expand-an-ubuntu-lvm-disk/)
+- [Choosing between BTRFS and LVM+ext4 — Fedora Magazine](https://fedoramagazine.org/choose-between-btrfs-and-lvm-ext4/)

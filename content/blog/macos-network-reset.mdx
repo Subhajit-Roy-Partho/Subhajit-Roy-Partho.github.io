@@ -1,0 +1,25 @@
+---
+title: "macOS Network Reset"
+date: "2024-04-09"
+description: "The file-deletion trick that fixes stubborn Wi-Fi issues on a Mac when toggling Wi-Fi off and on doesn't help."
+tags: ["macos", "networking"]
+categories: ["misc"]
+toc: false
+---
+
+## Reset a Mac's network settings
+
+1. Turn off Wi-Fi.
+2. Open Finder → from the top menu, **Go → Go to Folder…**
+3. Type `/Library/Preferences/SystemConfiguration`.
+4. Delete as many of the following as you find:
+   - `com.apple.airport.preferences.plist`
+   - `com.apple.network.identification.plist` / `com.apple.network.eapoclient.configuration.plist`
+   - `com.apple.wifi.message-tracer.plist`
+   - `NetworkInterfaces.plist`
+   - `preferences.plist`
+5. Move them to the trash and restart.
+
+**Reference**
+
+- [How to Reset Network Settings on Mac — Lifewire](https://www.lifewire.com/reset-network-settings-on-mac-5184072)

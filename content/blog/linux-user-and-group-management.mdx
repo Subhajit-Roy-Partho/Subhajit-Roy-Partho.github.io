@@ -1,0 +1,49 @@
+---
+title: "Linux User & Group Management"
+date: "2024-08-01"
+description: "Creating groups and users, and locking a shared directory like /var/www down to a single group with the right permission bits."
+tags: ["linux", "users", "permissions"]
+categories: ["infrastructure"]
+toc: true
+---
+
+## Groups
+
+Create a new group with a specific group id (`-r` instead gives a low, system-level id):
+
+```bash
+sudo groupadd -g 1002 mygroup
+```
+
+Restrict a shared directory to one group:
+
+```bash
+sudo usermod -a -G www-data someuser
+sudo chgrp -R www-data /var/www
+sudo chmod -R g+w /var/www
+sudo find /var/www -type d -exec chmod 2775 {} \;
+sudo find /var/www -type f -exec chmod ug+rw {} \;
+```
+
+The `2775` on directories sets the setgid bit, so new files created inside inherit the `www-data` group automatically.
+
+Add an existing user to a group, then refresh the current shell's group membership:
+
+```bash
+sudo usermod -aG developers john
+newgrp developers
+```
+
+## Users
+
+Create a user with a specific home directory, shell, and group memberships:
+
+```bash
+sudo useradd -m -d /home/subho -s /bin/bash -G standard,admin subho
+```
+
+Set or change that user's password:
+
+```bash
+sudo passwd subho
+```

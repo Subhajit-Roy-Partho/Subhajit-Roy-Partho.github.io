@@ -1,0 +1,22 @@
+---
+title: "Windows Time Server Fix"
+date: "2024-04-09"
+description: "Changing which NTP server Windows syncs its clock against via the registry."
+tags: ["windows", "networking"]
+categories: ["misc"]
+toc: false
+---
+
+## Change the time server on Windows
+
+1. Open Run (`Win+R`), type `regedit`, and hit Enter.
+2. Navigate to `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\DateTime\Servers`.
+3. Add a new string value — the name is an integer (`1`, `2`, `3`, …) and the value is the time server's address. Popular choices:
+   - `us.pool.ntp.org`
+   - `time.google.com`, `time1.google.com` … `time4.google.com`
+   - `time-a-g.nist.gov`
+4. The `(Default)` entry's value is the integer key of whichever server should actually be used — e.g. if `time.google.com` is registered under `3`, set `(Default)` to `3`.
+
+**Reference**
+
+- [How to change the time server in Windows 10 — The Windows Club](https://www.thewindowsclub.com/change-time-server-windows-10)

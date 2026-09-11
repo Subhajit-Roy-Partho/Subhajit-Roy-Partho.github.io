@@ -1,0 +1,36 @@
+---
+title: "Optimizing Molecular Structures with DFT"
+date: "2024-02-26"
+description: "Measuring ligand-to-DNA-backbone distances accurately by pre-optimizing structures with a classical force field before handing them to a quantum engine."
+tags: ["quantum-chemistry", "dft", "dna"]
+categories: ["simulation"]
+toc: true
+---
+
+The goal here was to measure the distance between two ligands bound to a DNA phosphate backbone with as much accuracy as possible. Since the ligands included non-standard elements, classical all-atom MD wasn't a good fit, which pushed me toward quantum force fields instead.
+
+1. Draw the ligand and DNA structures in Avogadro, which also does a rough initial optimization.
+2. Pre-optimize the resulting `.cml` files with a classical force field (`MMFF94s`) before handing them to a quantum engine (GAMESS, Gaussian, etc.) — this saves the expensive quantum optimizer from doing all the work from a poor starting geometry. Using Open Babel:
+
+```bash
+obabel initial.cml -O optimized.cml --minimize --steps 15000 --sd --log --ff MMFF94s
+```
+
+- `initial.cml` / `optimized.cml` — input and output structures.
+- `--sd` — use the steepest-descent algorithm.
+- `--log` — log the whole minimization.
+
+Available force fields:
+
+```text
+GAFF        General Amber Force Field (GAFF).
+Ghemical    Ghemical force field.
+MMFF94      MMFF94 force field.
+MMFF94s     MMFF94s force field.
+UFF         Universal Force Field.
+```
+
+**References**
+
+- [Open Babel: forcefield energy and minimization](https://open-babel.readthedocs.io/en/latest/Command-line_tools/babel.html#forcefield-energy-and-minimization)
+- [Avogadro](https://avogadro.cc/)

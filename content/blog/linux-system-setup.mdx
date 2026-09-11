@@ -41,6 +41,9 @@ sudo usermod -aG wheel myuser
 ## Install oh-my-zsh
 sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
 
+## Switch to a theme that shows more useful info in the prompt
+sed -i 's/^ZSH_THEME=.*/ZSH_THEME="avit"/' ~/.zshrc
+
 ## Install plugins
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions

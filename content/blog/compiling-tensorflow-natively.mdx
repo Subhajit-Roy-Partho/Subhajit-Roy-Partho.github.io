@@ -1,0 +1,66 @@
+---
+title: "Compiling TensorFlow Natively"
+date: "2023-10-09"
+description: "Building TensorFlow from source with AVX, cuDNN, and TensorRT support for a real (if modest) speedup over the pip wheel."
+tags: ["tensorflow", "ml", "compilation"]
+categories: ["ml"]
+toc: true
+---
+
+A brief procedure for compiling TensorFlow with AVX, TensorRT, and CUDA support.
+
+1. Clone the TensorFlow repo:
+
+```bash
+git clone https://github.com/tensorflow/tensorflow.git
+git checkout branch  # not necessary, but pick a stable branch if you can
+```
+
+2. Download the cuDNN and TensorRT tarballs, extract them, and place the files somewhere sensible — cuDNN's headers/libs go in `/usr/local/cuda/include` and `/usr/local/cuda/bin`, TensorRT into `/usr/local`.
+
+3. Run the configure script. It's mostly trivial except for the prompt asking for header paths it can't find — pass all of them comma-separated. For me that was:
+
+```text
+/usr/local/cuda/include,/usr/local/cuda/lib64,/usr/local/cuda/nvvm/lib64,/usr/local/cuda/bin,/usr/,/usr/local/TensorRT-8.6.1.6
+```
+
+<Callout type="note">
+  I used gcc instead of clang for CUDA and other compilation — the default compiler was `/usr/bin/gcc`.
+</Callout>
+
+4. Build:
+
+```bash
+bazel build -c opt --copt=-march=native --copt=-mfpmath=both --config=cuda -k //tensorflow/tools/pip_package:build_pip_package
+```
+
+The fancier flag combination (`-mavx -mavx2 -mfma -msse4.2`) caused build failures for me, so I fell back to `-march=native`. Either way, wait patiently.
+
+5. Package it into a pip wheel:
+
+```bash
+./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
+```
+
+For a nightly build:
+
+```bash
+./bazel-bin/tensorflow/tools/pip_package/build_pip_package --nightly_flag /tmp/tensorflow_pkg
+```
+
+6. Install it:
+
+```bash
+pip install /tmp/tensorflow_pkg/tensorflow-version-tags.whl
+```
+
+## Conclusion
+
+Building from source is fiddly — something is bound to go wrong, and solutions are scarce if you don't already know Bazel well. I hit a wall with clang early on and switched to gcc to get past it.
+
+After compiling, CPU throughput improved noticeably over the prebuilt pip wheel, but I saw no improvement on the GPU side (tested on an RTX 3060).
+
+**References**
+
+- [Build from source — TensorFlow](https://www.tensorflow.org/install/source)
+- [How to compile TensorFlow with SSE4.2 and AVX — Stack Overflow](https://stackoverflow.com/questions/41293077/how-to-compile-tensorflow-with-sse4-2-and-avx-instructions)

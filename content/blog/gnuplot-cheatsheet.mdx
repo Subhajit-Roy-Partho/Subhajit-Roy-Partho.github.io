@@ -1,0 +1,37 @@
+---
+title: "GNUplot Cheatsheet"
+date: "2024-06-20"
+description: "Plotting a column against its row index, and building normalized histograms from a single-column data file."
+tags: ["gnuplot", "plotting"]
+categories: ["simulation"]
+toc: true
+---
+
+## Plot a column against its row index
+
+```bash
+plot "data.txt" u ($0):4 title "Plotting with x innumeration"
+```
+
+`$0` is the line number, so this plots column 4 against its position in the file.
+
+## Plot a histogram
+
+```gnuplot
+set terminal png
+set output 'histogram.png'
+set style data histogram
+set style fill solid
+set xlabel 'Angles(°)'
+set ylabel 'Normalized Frequency'
+set title 'Angles distribution for α'
+bin_width = 1
+bin(x, width) = width * floor(x / width) + bin_width / 2.0
+stats 'angles.txt' nooutput
+total_points = STATS_records
+plot 'angles.txt' using (bin($1, bin_width)):(1.0/total_points) smooth freq with boxes lc rgb 'blue' notitle
+```
+
+- `bin_width` controls the sampling density (bin width).
+- Dividing by `total_points` normalizes the histogram — drop that division for an unnormalized count.
+- `angles.txt` is assumed to be a single column of values.

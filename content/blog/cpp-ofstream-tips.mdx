@@ -1,0 +1,16 @@
+---
+title: "C++ ofstream Tips"
+date: "2024-08-17"
+description: "What each std::ios flag actually does when opening a file for writing."
+tags: ["c++", "coding"]
+categories: ["infrastructure"]
+toc: false
+---
+
+## `ofstream` opening flags
+
+- `std::ios::ate` — the whole file is available for writing, with the pointer starting at the end.
+- `std::ios::app` — writing always happens at the end; existing content can't be overwritten.
+- `std::ios::trunc` — deletes everything in the file and starts writing fresh.
+- `std::ios::out` — creates the file if it doesn't exist; writing behavior then depends on flags like `trunc` or `ate`.
+- `std::ios::binary` — the mode to reach for when generating binary files.

@@ -1,0 +1,148 @@
+---
+title: "Useful Bash Commands & Functions"
+date: "2024-02-27"
+description: "A grab bag of .bashrc functions I re-add on every new machine: server shortcuts, SLURM/GPU job killers, and VPN login helpers."
+tags: ["bash", "linux", "slurm"]
+categories: ["infrastructure"]
+toc: true
+---
+
+## Alias
+
+```bash
+alias md=mkdir
+```
+
+## bashrc settings
+
+```bash
+shopt -s autocd
+```
+
+## Server shortcut function
+
+```bash
+server(){
+    if [ $# -eq 0 ];then
+        ssh -CX user@serverIP
+    elif [ $1 = "port" ];then
+        if [ -z "$4" ];then
+            ssh -N -L $2:$3.serverIP:$2 user@serverIP
+        else
+            ssh -N -L $2:$3.serverIP:$4 user@serverIP
+        fi
+    elif [ $1 = "send" ];then
+        rsync -rzvP $2 user@serverIP:$3
+    elif [ $1 = "receive" ];then
+        rsync -rzvP user@serverIP:$2 $3
+    else
+        ssh user@serverIP $1
+    fi
+}
+```
+
+Replace `server` with whatever name you like, `user` with your username, and `serverIP` with the server's address.
+
+- `server` — just logs you in.
+- `server send yourLocation serverLocation` — sends a file to the server.
+- `server receive serverLocation yourLocation` — downloads a file from the server.
+- `server "command"` — runs a command remotely, e.g. `server myjobs`, `server "cat file"`, `server "tail file"`.
+
+## VPN login helper
+
+```bash
+function asu(){
+    if [ $# -eq 0 ];then
+        echo "password\npush\n"|sudo openconnect -u user --server=sslvpn.asu.edu
+    elif [ $# -eq 1 ];then
+        echo "password\n$1\n"|sudo openconnect -u user --server=sslvpn.asu.edu
+    else
+        echo "$1\n$2\n"|sudo openconnect -u user --server=sslvpn.asu.edu
+    fi
+}
+```
+
+The function form only works in zsh; for bash, use the alias form instead:
+
+```bash
+alias asu='echo "password\npush"|sudo openconnect -u user --server=sslvpn.asu.edu'
+```
+
+<Callout type="warning">
+  Keeping a password inside `.bashrc`/`.zshrc` like this is insecure — treat it as a convenience for a personal, trusted
+  machine only.
+</Callout>
+
+## Git shortcut
+
+```bash
+gi(){
+    if [ $# -eq 0 ];then
+        git pull; git add .; git commit -m "update"; git push;
+    elif [ $1 = "commit" ];then
+        git add .; git commit -m $2; git push
+    elif [ $# -eq 1 ];then
+        git clone $1
+    fi
+}
+```
+
+## Quick CMake + Ninja build
+
+```bash
+alias ninjabuild="cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release; ninja"
+```
+
+## Check a SLURM job's status
+
+```bash
+checkJob(){
+    status=$(squeue -h -j $1 -o "%T")
+
+    if [[ -z "$status" ]]; then
+        echo "The job $1 has finished"
+        return 1
+    else
+        case $status in
+        "RUNNING")
+            echo "The job $1 is running"
+            return 0
+            ;;
+        "PENDING")
+            echo "The job $1 is pending in queue"
+            return 2
+            ;;
+        *)
+            echo "The job $1 is in: $status"
+            return 3
+            ;;
+        esac
+    fi
+}
+```
+
+## Kill jobs by keyword
+
+```bash
+kill $(ps aux | grep "program Name" | grep "2nd cond if needed" | awk '{print $2}')
+```
+
+The same trick works for GPU jobs shown by `nvidia-smi`:
+
+```bash
+kill $(nvidia-smi | grep "program Name" | grep "2nd condititon" | awk '{print $5}')
+```
+
+## Misc one-liners
+
+Refresh the timestamp on every file — useful when something automatically purges old files:
+
+```bash
+find . -type f -exec touch --no-create {} +
+```
+
+Merge files (`>` overwrites, `>>` appends):
+
+```bash
+cat file1 file2 > file3
+```

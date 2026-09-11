@@ -1,0 +1,50 @@
+---
+title: "All-Atom MD Simulation Setup for DNA (AMBER)"
+date: "2024-03-15"
+description: "Building an AMBER-ready system for a DNA duplex with a covalently attached small molecule: antechamber, tleap, and homology modeling for missing residues."
+tags: ["amber", "dna", "simulation"]
+categories: ["simulation"]
+toc: true
+---
+
+## System setup with AMBER
+
+- Generate the DNA structure with a tool like NAB or Chimera.
+- Generate the ligand structure with GaussView or Avogadro2.
+- Run `antechamber` to convert the ligand into an AMBER-suitable format (`prepi` or `mol2` — `mol2` is preferred), then `parmchk2` to generate the matching force field modifications:
+
+```bash
+antechamber -fi pdb -fo prepi -i ligand.pdb -o ligand.prepi -rn LIG -c bcc -at gaff2
+parmchk2 -f prepi -i ligand.prepi -o ligand.frcmod
+```
+
+- Combine the DNA, ligand, and protein with `tleap`, then run it:
+
+```bash
+tleap -s -f tleap.in > out.txt
+```
+
+<Callout type="note">
+  AMBER's `leaprc` files live at `$AMBERHOME/dat/leap/cmd`.
+</Callout>
+
+## Homology modeling for a missing residue
+
+The easiest way to install MODELLER is through conda:
+
+```bash
+mamba install -c salilab modeller
+```
+
+- Add the MODELLER license key as instructed by the installer.
+- Note the executable name — it follows the pattern `modVersion` (for me, `mod10.5`).
+- MODELLER can be run manually per its docs, but Chimera has a built-in function with a much nicer visualizer for this.
+- Load the structure with the missing residues (I used `5L2I`) and let Chimera drive MODELLER from there.
+
+## A note on cysteine naming
+
+`CYS` is a normal cysteine residue; the deprotonated (negatively charged) state is written `CYM`, and a cysteine in a disulfide bond (or other special bond) is written `CYX`. [[1]](https://ambermd.org/tutorials/advanced/tutorial1_adv/)
+
+**References**
+
+1. [AMBER Advanced Tutorial 1](https://ambermd.org/tutorials/advanced/tutorial1_adv/)

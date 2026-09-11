@@ -1,0 +1,97 @@
+---
+title: "Setting Up an ARM Linux Server"
+date: "2024-09-07"
+description: "Distro choice, a lightweight desktop environment, and the NVML/CUDA fix needed for SLURM to see GPUs correctly on ARM (aarch64/sbsa)."
+tags: ["arm", "linux", "slurm", "gpu"]
+categories: ["infrastructure"]
+toc: true
+---
+
+## Important notes
+
+- The welcome banner lives at `/etc/motd` — ASCII art looks great there.
+- Distro choices, roughly in order of how much trouble they gave me:
+  1. Debian
+  2. Fedora
+  3. Arch
+  4. Ubuntu (can even damage firmware on some ARM boards)
+
+## Useful software
+
+### Desktop environment
+
+Xfce is one of the easiest to configure:
+
+```bash
+sudo apt install xfce4
+```
+
+Start it from a tty with `startxfce4`.
+
+## Fixes
+
+### SLURM GPU segregation
+
+SLURM uses NVML to detect and segregate GPUs during scheduling, and on my ARM setup this API wasn't working out of the box.
+
+1. Find the library: `sudo find / -name "libnvidia-ml.so"` — for me it was at `/usr/local/cuda-12.2/targets/sbsa-linux/lib/stubs/libnvidia-ml.so`.
+2. Copy it to `/usr/lib`.
+3. Add the header location to `/etc/profile`:
+
+```bash
+export C_INCLUDE_PATH="/usr/local/cuda-12.2/targets/sbsa-linux/include:$C_INCLUDE_PATH"
+export CPLUS_INCLUDE_PATH="/usr/local/cuda-12.2/targets/sbsa-linux/include:$CPLUS_INCLUDE_PATH"
+```
+
+4. `/usr/lib` should already be in `ldconfig`'s search path; if not, add it under `/etc/ld.so.conf.d` and run `sudo ldconfig`.
+5. Verify with a small NVML test program:
+
+```c
+#include <stdio.h>
+#include <nvml.h>
+
+int main() {
+    nvmlReturn_t result;
+    unsigned int device_count = 0;
+
+    result = nvmlInit();
+    if (NVML_SUCCESS != result) {
+        printf("Failed to initialize NVML: %s\n", nvmlErrorString(result));
+        return 1;
+    }
+
+    result = nvmlDeviceGetCount(&device_count);
+    if (NVML_SUCCESS != result) {
+        printf("Failed to get device count: %s\n", nvmlErrorString(result));
+        nvmlShutdown();
+        return 1;
+    }
+    printf("Number of GPUs detected: %u\n", device_count);
+
+    result = nvmlShutdown();
+    if (NVML_SUCCESS != result) {
+        printf("Failed to shutdown NVML: %s\n", nvmlErrorString(result));
+        return 1;
+    }
+    return 0;
+}
+```
+
+```bash
+gcc nvml.c -lnvidia-ml; ./a.out
+```
+
+If it prints the correct GPU count, the fix worked.
+
+### Rebuilding the NVIDIA kernel module
+
+```bash
+sudo akmods --force
+```
+
+Logs land in `/var/cache/akmods/nvidia/{Kernel Version}`. Check your kernel version with `uname -srm`.
+
+<Callout type="warning">
+  Never point `/usr/bin/gcc` (or `g++`) at a different major version than the system default — it breaks core system
+  files, including the NVIDIA driver akmod.
+</Callout>

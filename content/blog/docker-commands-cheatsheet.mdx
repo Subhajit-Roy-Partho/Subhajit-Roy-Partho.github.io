@@ -1,0 +1,17 @@
+---
+title: "Docker Commands Cheatsheet"
+date: "2024-08-17"
+description: "Running disposable GPU-enabled containers and listing what's running."
+tags: ["docker", "gpu"]
+categories: ["infrastructure"]
+toc: false
+---
+
+## Running a container
+
+- `docker run --rm` — deletes the container automatically once it exits.
+- `docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi` — run with NVIDIA GPU access. Substitute `all` with `device=0` to target a specific GPU.
+
+## Container commands
+
+- `docker container ls -a` — list every container, running or not.

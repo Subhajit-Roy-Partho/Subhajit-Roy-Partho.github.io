@@ -1,0 +1,69 @@
+---
+title: "CryoSPARC Installation & Management"
+date: "2024-02-12"
+description: "Licensing, installing, and standing up a CryoSPARC master on a single machine or an HPC cluster node."
+tags: ["cryo-em", "hpc", "linux"]
+categories: ["infrastructure"]
+toc: true
+---
+
+## Installation
+
+1. Request a [license](http://cryosparc.com/download) — it usually takes CryoSPARC about two business days to issue one.
+2. Add it to your shell profile: `export LICENSE_ID="<license_id>"` in `.bashrc`.
+3. Download the master (and, for a cluster, the worker) package:
+
+```bash
+curl -L https://get.cryosparc.com/download/master-latest/$LICENSE_ID -o cryosparc_master.tar.gz
+curl -L https://get.cryosparc.com/download/worker-latest/$LICENSE_ID -o cryosparc_worker.tar.gz
+```
+
+For a single-PC setup, only the master package is required.
+
+4. Extract it:
+
+```bash
+tar -xzvf cryosparc_master.tar.gz
+```
+
+5. Pick a database location — scratch space works well on a cluster, e.g. `/scratch/cryo/cryoDB`.
+6. Install from the extracted folder:
+
+```bash
+./install.sh --license $LICENSE_ID --hostname hostname --dbpath /scratch/cryo/cryoDB --port 61000
+```
+
+Get the hostname with `hostname`. On a cluster this changes with node allocation, so update `config.sh` accordingly — adding `export CRYOSPARC_FORCE_HOSTNAME=true` to `config.sh` also helps.
+
+## Starting it up
+
+```bash
+bin/cryosparcm start
+```
+
+The first start takes a while to configure; subsequent starts are fast.
+
+Create a user:
+
+```bash
+bin/cryosparcm createuser --email "email@email.com" --username "user1" --firstname "user" --lastname "1" --password "somepass"
+```
+
+Elevate that user to admin:
+
+```bash
+cryosparcm updateuser --email "<email address>" --admin "true"
+```
+
+CryoSPARC is now ready at port 61000. On a cluster, forward the port over SSH before opening it in a browser:
+
+```bash
+ssh -N -L 61000:cg001.sol.asu.edu:61000 user@sol.asu.edu
+```
+
+(`cg001` is the compute node's id — on a personal machine you can skip this step.) Then open `localhost:61000` in the browser.
+
+**References**
+
+- [Downloading, installing, and configuring CryoSPARC](https://guide.cryosparc.com/setup-configuration-and-management/how-to-download-install-and-configure/downloading-and-installing-cryosparc)
+- [No admin account upon install — CryoSPARC Discuss](https://discuss.cryosparc.com/t/no-admin-account-upon-install-create-admin-account-via-cli/10530/2)
