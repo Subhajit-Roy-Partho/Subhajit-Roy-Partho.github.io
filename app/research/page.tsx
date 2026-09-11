@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SectionHeading } from "@/components/section-heading";
 import { Reveal } from "@/components/reveal";
-import { TiltCard } from "@/components/tilt-card";
+import { ProjectCard } from "@/components/project-card";
 import { experience } from "@/data/site";
 import { projects } from "@/data/projects";
 
@@ -20,22 +20,15 @@ export default function ResearchPage() {
       </section>
 
       <section className="container-page section pt-0">
-        <SectionHeading eyebrow="Featured builds" title="Tools & platforms" />
+        <SectionHeading
+          eyebrow="Tools & platforms"
+          title="Software, one project page at a time"
+          description="Each of these has its own page with the full story, a live link where one exists, and the papers it's tied to."
+        />
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           {projects.map((project, i) => (
             <Reveal key={project.id} delay={(i % 2) * 0.06}>
-              <TiltCard className="h-full">
-                <h3 className="font-display text-xl font-semibold">{project.name}</h3>
-                <p className="mt-1 text-sm text-[var(--accent)]">{project.tagline}</p>
-                <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">{project.description}</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {project.tags.map((tag) => (
-                    <span key={tag} className="chip">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </TiltCard>
+              <ProjectCard project={project} />
             </Reveal>
           ))}
         </div>

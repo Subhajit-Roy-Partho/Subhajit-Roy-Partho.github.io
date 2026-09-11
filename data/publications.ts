@@ -27,6 +27,7 @@ export const publications: Publication[] = [
     venue: "Frontiers in Neural Circuits",
     year: 2026,
     status: "accepted",
+    link: "https://www.frontiersin.org/journals/neural-circuits/articles/10.3389/fncir.2026.1893836/abstract",
   },
   {
     id: "satyabola-chiral-metamaterial-2026",
@@ -36,6 +37,7 @@ export const publications: Publication[] = [
     venue: "bioRxiv",
     year: 2026,
     status: "preprint",
+    link: "https://www.biorxiv.org/content/10.64898/2026.01.25.701623v1",
   },
   {
     id: "diep-polycubes-2026",
@@ -45,6 +47,7 @@ export const publications: Publication[] = [
     venue: "Nature Chemistry",
     year: 2026,
     status: "under review",
+    link: "https://chemrxiv.org/doi/10.26434/chemrxiv-2025-qbk3f",
   },
   {
     id: "zheng-jacs-2025",
@@ -53,7 +56,8 @@ export const publications: Publication[] = [
       "DNA-Templated Spatially Controlled Proteolysis Targeting Chimera for Cyclin D1–CDK4/6 Complex Protein Degradation.",
     venue: "Journal of the American Chemical Society, 147(33), 29742–29755",
     year: 2025,
-    link: "https://doi.org/10.1021/jacs.5c07641",
+    link: "https://doi.org/10.1021/jacs.5c04918",
+    doi: "10.1021/jacs.5c04918",
   },
   {
     id: "wisna-dna-paint-2025",
