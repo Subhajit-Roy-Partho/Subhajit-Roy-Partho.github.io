@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SectionHeading } from "../section-heading";
 import { Reveal } from "../reveal";
+import { Parallax } from "../parallax";
 import { PublicationItem } from "../publication-item";
 import { publications } from "@/data/publications";
 
@@ -19,7 +20,9 @@ export function SelectedPublications() {
       <div className="mt-12 grid gap-5 sm:grid-cols-2">
         {latest.map((pub, i) => (
           <Reveal key={pub.id} delay={(i % 2) * 0.08}>
-            <PublicationItem publication={pub} />
+            <Parallax offset={i % 2 === 0 ? 16 : -16}>
+              <PublicationItem publication={pub} />
+            </Parallax>
           </Reveal>
         ))}
       </div>

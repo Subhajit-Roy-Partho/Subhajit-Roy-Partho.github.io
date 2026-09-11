@@ -1,6 +1,8 @@
 import { SectionHeading } from "../section-heading";
 import { Reveal } from "../reveal";
+import { Parallax } from "../parallax";
 import { TiltCard } from "../tilt-card";
+import { MoleculeCanvas } from "../molecule/molecule-canvas";
 import { researchAreas } from "@/data/projects";
 
 const ICONS: Record<string, string> = {
@@ -12,22 +14,27 @@ const ICONS: Record<string, string> = {
 export function ResearchAreas() {
   return (
     <section className="section container-page">
-      <SectionHeading
-        eyebrow="What I work on"
-        title="Three threads, one goal: programmable matter"
-        description="Machine learning, molecular simulation, and the infrastructure that connects computation back to the bench."
-      />
+      <div className="flex flex-wrap items-center justify-between gap-8">
+        <SectionHeading
+          eyebrow="What I work on"
+          title="Three threads, one goal: programmable matter"
+          description="Machine learning, molecular simulation, and the infrastructure that connects computation back to the bench."
+        />
+        <MoleculeCanvas className="h-48 w-48 shrink-0" />
+      </div>
 
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {researchAreas.map((area, i) => (
           <Reveal key={area.key} delay={i * 0.08}>
-            <TiltCard className="h-full">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
-                <path d={ICONS[area.key]} />
-              </svg>
-              <h3 className="font-display mt-5 text-lg font-semibold">{area.title}</h3>
-              <p className="mt-2 text-sm text-[var(--muted)]">{area.blurb}</p>
-            </TiltCard>
+            <Parallax offset={i % 2 === 0 ? 18 : -18}>
+              <TiltCard className="h-full">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round">
+                  <path d={ICONS[area.key]} />
+                </svg>
+                <h3 className="font-display mt-5 text-lg font-semibold">{area.title}</h3>
+                <p className="mt-2 text-sm text-[var(--muted)]">{area.blurb}</p>
+              </TiltCard>
+            </Parallax>
           </Reveal>
         ))}
       </div>

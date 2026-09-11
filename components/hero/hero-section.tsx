@@ -1,13 +1,21 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { HeroCanvas } from "./hero-canvas";
 import { MagneticButton } from "../magnetic-button";
 import { profile } from "@/data/site";
 
 export function HeroSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
+
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, -140]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
+  const cueOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+
   return (
-    <section className="relative flex min-h-[100svh] items-center overflow-hidden">
+    <section ref={sectionRef} className="relative flex min-h-[100svh] items-center overflow-hidden">
       <HeroCanvas />
       <div
         aria-hidden
@@ -18,7 +26,7 @@ export function HeroSection() {
         }}
       />
 
-      <div className="container-page relative z-10 pt-24">
+      <motion.div style={{ y: contentY, opacity: contentOpacity }} className="container-page relative z-10 pt-24">
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -61,12 +69,10 @@ export function HeroSection() {
             Read the publications
           </MagneticButton>
         </motion.div>
-      </div>
+      </motion.div>
 
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 0.8 }}
+        style={{ opacity: cueOpacity }}
         className="absolute bottom-8 left-1/2 z-10 -translate-x-1/2 text-xs uppercase tracking-[0.3em] text-[var(--muted)]"
       >
         <div className="flex flex-col items-center gap-2">

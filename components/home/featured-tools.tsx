@@ -1,5 +1,6 @@
 import { SectionHeading } from "../section-heading";
 import { Reveal } from "../reveal";
+import { Parallax } from "../parallax";
 import { ProjectCard } from "../project-card";
 import { projects } from "@/data/projects";
 
@@ -17,7 +18,9 @@ export function FeaturedTools() {
       <div className="mt-12 grid gap-6 md:grid-cols-2">
         {featured.map((project, i) => (
           <Reveal key={project.id} delay={(i % 2) * 0.08}>
-            <ProjectCard project={project} />
+            <Parallax offset={i % 2 === 0 ? 22 : -22}>
+              <ProjectCard project={project} />
+            </Parallax>
           </Reveal>
         ))}
       </div>
