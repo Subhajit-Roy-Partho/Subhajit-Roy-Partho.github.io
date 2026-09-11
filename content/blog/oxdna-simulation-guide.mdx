@@ -1,0 +1,173 @@
+---
+title: "oxDNA Simulation Guide"
+date: "2025-08-20"
+description: "A step-by-step guide to relaxing and equilibrating structures in oxDNA, from installation through production simulation."
+tags: ["oxdna", "simulation", "hpc"]
+categories: ["simulation"]
+toc: true
+---
+
+## Installing oxDNA
+
+### Compile from source
+
+For an oxDNA installation you need a C/C++ compiler (gcc/g++), git to fetch the code, cmake and make to build it, and preferably Python for the oxDNA analysis toolbox and `oxpy`.
+
+```bash
+cd oxDNA         # enter the oxDNA folder
+mkdir build      # create a new build folder — good practice to build out-of-source
+cd build
+cmake .. -DCUDA=ON -DPYTHON=ON -DCMAKE_BUILD_TYPE=Release  # CPU-only: use -DCUDA=OFF and omit -DPYTHON
+make -j$(nproc)
+```
+
+The binaries land in `build/bin`. Add it to your `PATH`:
+
+```bash
+echo "PATH=$PATH:/location/to/build/bin" >> ~/.bashrc && source ~/.bashrc
+```
+
+### Docker / Singularity
+
+If you'd rather skip compiling entirely, use a container with all dependencies already handled — see my [Docker/Singularity setup](https://github.com/Subhajit-Roy-Partho/sync) for a ready-to-run image.
+
+## Setting up restraints in oxView
+
+To run a restrained simulation, generate hydrogen-bond restraints in oxView:
+
+```text
+Dynamics -> Forces -> set stiffness (2–5) and relaxed distance 1.2 -> create from base pair -> Yes
+```
+
+This searches all base pairs and generates restraints for each one. Save the structure's `top`/`dat` files along with the force file.
+
+<Callout type="tip">
+  Using the same filename for the initial and saved configuration (e.g. `last_conf.dat`) simplifies restarts — after an
+  interruption, rerunning with the same inputs resumes from the last saved configuration.
+</Callout>
+
+These structures are simulated with **MC**, then **MD with restraints**, and finally a **production run** without restraints or a max backbone force cap.
+
+## Step 1 — MC simulation with restraints + max backbone force
+
+```ini
+##############################
+####  PROGRAM PARAMETERS  ####
+##############################
+interaction_type=DNA2
+salt_concentration=1.0
+sim_type = MC
+backend = CPU
+
+##############################
+####    SIM PARAMETERS    ####
+##############################
+steps = 1e5
+max_backbone_force = 10.
+ensemble = nvt
+delta_translation = 0.02
+delta_rotation = 0.04
+use_average_seq = no
+seq_dep_file = oxDNA2_sequence_dependent_parameters.txt
+thermostat = john
+T = 25C
+dt = 0.003
+verlet_skin = 0.6
+
+##############################
+####    INPUT             ####
+##############################
+topology = output.top
+conf_file = output.dat
+external_forces = 1
+external_forces_file = output_force.txt
+
+##############################
+####     OUTPUT           ####
+##############################
+lastconf_file = last_conf.dat
+trajectory_file = trajectoryRelaxCPU.dat
+log_file = log.dat
+energy_file = energyRelaxCPU.dat
+print_conf_interval = 1e4
+print_energy_every = 1e4
+```
+
+## Step 2 — MD with restraints + max backbone force
+
+Same restraint setup, now on the GPU backend, continuing from `last_conf.dat`:
+
+```ini
+sim_type = MD
+backend = CUDA
+backend_precision = mixed
+CUDA_list = verlet
+use_edge = 1
+edge_n_forces = 1
+
+steps = 1e7
+max_backbone_force = 10.
+conf_file = last_conf.dat
+external_forces = 1
+external_forces_file = output_force.txt
+trajectory_file = trajectoryRelaxMD.dat
+```
+
+## Step 3 — Raise the max backbone force
+
+<Callout type="warning">
+  Check visually whether the structure is fully relaxed before proceeding — an unrelaxed structure shows a very long
+  stretched-out bond. You can also confirm computationally with a short 100-step run. If it isn't relaxed yet, keep the
+  restraints **on** and step `max_backbone_force` up to 20, then 40, until it is.
+</Callout>
+
+```ini
+steps = 1e2
+#max_backbone_force = 10.
+conf_file = last_conf.dat
+#external_forces = 1
+#external_forces_file = output_force.txt
+```
+
+If a bond is unnaturally long (> 1.2), the log file will report an error.
+
+Once fully relaxed, comment out the external forces section, raise `max_backbone_force` to 60 or higher, and run for `1e7` steps.
+
+## Step 4 — Production run
+
+Run for at least `1e9` steps. Consider multiple replicas for statistical convergence or broader sampling of conformational space. `dt` of 0.3–0.5 is typical (never higher than 0.5); a save frequency of `1e5`–`5e5` gives good statistics.
+
+```ini
+steps = 1e9
+#max_backbone_force = 10.
+conf_file = last_conf.dat
+trajectory_file = trajectory.dat
+print_conf_interval = 1e5
+print_energy_every = 1e5
+```
+
+## Chaining it all together on SLURM
+
+Save the input files as `inputMC`, `inputMDRelax`, `inputMDEqui`, `input`, then submit them as one job:
+
+```bash
+#!/bin/sh
+#SBATCH -q private
+#SBATCH -p general
+#SBATCH -t 7-00:00
+#SBATCH -c 2
+#SBATCH -G 1
+#SBATCH -J oxDNASimulation
+
+module load cuda-12.1.1-gcc-12.1.0 gcc-12.1.0-gcc-11.2.0 cmake eigen-3.4.0-gcc-11.2.0
+
+oxDNA inputMC > outMC.log
+oxDNA inputMDRelax > outMDRelax.log
+oxDNA inputMDEqui > outMDEqui.log
+oxDNA input > out.log
+```
+
+<Callout type="note">
+  To automate job submission and get better GPU job control, see my [sync.sh](https://github.com/Subhajit-Roy-Partho/sync)
+  script.
+</Callout>

@@ -1,0 +1,229 @@
+---
+title: "SLURM: Commands and Cluster Management"
+date: "2025-08-25"
+description: "Installing munge and SLURM, everyday queue/partition commands, and setting up slurmdbd accounting from scratch."
+tags: ["linux", "slurm", "hpc"]
+categories: ["infrastructure"]
+toc: true
+---
+
+## Basic installation
+
+Install the packages:
+
+```bash
+sudo apt install -y munge libmunge-dev
+```
+
+Create munge keys:
+
+```bash
+sudo /usr/sbin/create-munge-key
+sudo chown munge: /etc/munge/munge.key
+sudo chmod 400 /etc/munge/munge.key
+```
+
+If the above fails, do it manually with:
+
+```bash
+sudo mungekey --create --force --keyfile /etc/munge/munge.key
+sudo chown -R munge: /etc/munge /var/log/munge /var/lib/munge /run/munge
+sudo chmod 0700 /etc/munge /var/log/munge /var/lib/munge
+sudo chmod 0755 /run/munge
+```
+
+Start and check munge:
+
+```bash
+sudo systemctl enable munge
+sudo systemctl start munge
+sudo systemctl status munge
+munge -n | unmunge
+```
+
+Result should look like:
+
+```text
+STATUS:          Success (0)
+ENCODE_HOST:     user-G4101 (127.0.1.1)
+ENCODE_TIME:     2025-08-25 15:05:03 -0700 (1756159503)
+DECODE_TIME:     2025-08-25 15:05:03 -0700 (1756159503)
+TTL:             300
+CIPHER:          aes128 (4)
+MAC:             sha256 (5)
+ZIP:             none (0)
+UID:             subho (1002)
+GID:             subho (1002)
+LENGTH:          0
+```
+
+<Callout type="note">
+  Installing SLURM on WSL Ubuntu with `sudo apt install -y slurm-wlm` is the easy path, but it's an older build with
+  partial GPU feature support that often fails — compile from source for the advanced features.
+</Callout>
+
+## Everyday commands
+
+- Show fairshare usage for various queues/partitions: `sacctmgr show qos`
+- Show a user's fairshare score: `sshare -l | grep usernameOrGrpName`
+- Basic partition info: `sinfo -p sulcgpu3 -o "%P %a %l %D %t %N"` or `sinfo -Nel | grep "sulcgpu3"`
+- Info on a particular node: `scontrol show node nodeName`
+- Queue info: `squeue -p partitionName` or `squeue -u userName`
+- Submit an empty job: `sbatch -n 20 --gres=gpu:1 --time=4:00:00 -q sulcgpu1 -p sulcgpu1 --output=/dev/null --error=/dev/null $@ _interactiveScript`
+
+where `_interactiveScript` can be as simple as:
+
+```bash
+#!/bin/sh
+# Simple batch script that starts SCREEN.
+exec screen -Dm -S slurm$SLURM_JOB_ID
+```
+
+Empty jobs can also be submitted as a SLURM script:
+
+```bash
+#!/bin/sh
+#SBATCH -q private
+#SBATCH -p general
+#SBATCH -G a100:1
+#SBATCH -t 5-00:00
+#SBATCH -c 20
+#SBATCH -o empty.out
+#SBATCH -e empty.err
+#SBATCH -J PHBdnaD
+
+exec screen -Dm -S slurm$SLURM_JOB_ID
+```
+
+To enter a submitted job, use `srun --pty --jobid=######## /bin/bash` or simply `ssh nodeid`.
+
+## Setting up slurmdbd
+
+Install MariaDB:
+
+```bash
+sudo apt-get install mariadb-server
+sudo systemctl enable mariadb
+sudo systemctl start mariadb
+```
+
+Create a database for SLURM:
+
+```sql
+sudo mysql -u root -p
+CREATE DATABASE slurm_acct_db;
+CREATE USER 'slurmuser'@'localhost' IDENTIFIED BY 'slurmPass';
+GRANT ALL ON slurm_acct_db.* TO 'slurmuser'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+The default MariaDB port is 3306 — confirm with `sudo ss -tulpn`. Adjust these in `/etc/mysql/mariadb.conf.d/50-server.cnf`:
+
+```ini
+innodb_buffer_pool_size = 1G
+innodb_lock_wait_timeout = 300
+```
+
+```bash
+sudo systemctl restart mariadb; sudo systemctl status mariadb
+```
+
+Sample `/etc/slurm/slurmdbd.conf`:
+
+```ini
+ArchiveEvents=yes
+ArchiveJobs=yes
+ArchiveResvs=yes
+ArchiveSteps=no
+ArchiveSuspend=no
+ArchiveTXN=no
+ArchiveUsage=no
+AuthInfo=/var/run/munge/munge.socket.2
+AuthType=auth/munge
+DbdHost=localhost
+DbdPort=6819
+DebugLevel=info
+PurgeEventAfter=1month
+PurgeJobAfter=12month
+PurgeResvAfter=1month
+PurgeStepAfter=1month
+PurgeSuspendAfter=1month
+PurgeTXNAfter=12month
+PurgeUsageAfter=24month
+LogFile=/var/log/slurm/slurmdbd.log
+PidFile=/var/run/slurm/slurmdbd.pid
+SlurmUser=slurm
+StoragePass=slurmPass
+StorageType=accounting_storage/mysql
+StorageUser=slurmuser
+StoragePort=3306
+```
+
+Sample `/etc/slurm/slurm.conf`:
+
+```ini
+ClusterName=ringtail
+SlurmctldHost=ringtail
+
+MailProg=/usr/bin/mail
+ProctrackType=proctrack/cgroup
+
+ReturnToService=1
+SlurmctldPidFile=/var/run/slurmctld.pid
+SlurmctldPort=6817
+SlurmdPidFile=/var/run/slurmd.pid
+SlurmdPort=6818
+SlurmdSpoolDir=/var/spool/slurmd
+SlurmUser=slurm
+AuthType=auth/munge
+
+StateSaveLocation=/var/spool/slurmctld
+TaskPlugin=task/affinity,task/cgroup
+
+InactiveLimit=0
+KillWait=30
+MinJobAge=300
+SlurmctldTimeout=120
+SlurmdTimeout=300
+Waittime=0
+
+SchedulerType=sched/backfill
+SelectType=select/cons_tres
+
+AccountingStorageEnforce=limits,qos,safe
+AccountingStorageHost=localhost
+AccountingStoragePort=6819
+AccountingStorageType=accounting_storage/slurmdbd
+
+JobCompLoc=/var/log/slurm/job_completions.log
+JobCompType=jobcomp/filetxt
+JobAcctGatherFrequency=30
+
+SlurmctldDebug=info
+SlurmctldLogFile=/var/log/slurm/slurmctld.log
+SlurmdDebug=info
+SlurmdLogFile=/var/log/slurm/slurmd.log
+
+# COMPUTE NODES
+GresTypes=gpu,mps
+NodeName=gpu CPUs=128 Sockets=1 CoresPerSocket=128 ThreadsPerCore=1 Gres=gpu:rtx4060:1,gpu:rtx4080:1,mps:200 NodeHostname=ringtail NodeAddr=ringtail State=idle RealMemory=96092
+PartitionName=general Nodes=ALL Default=YES MaxTime=INFINITE State=UP
+```
+
+Register the account and user:
+
+```bash
+sudo sacctmgr add account generic cluster=ringtail description="Generic Account" organization="SulcLab"
+sacctmgr list account
+sudo sacctmgr add user subho account=generic cluster=ringtail
+```
+
+## Conclusion
+
+SLURM is one of the best open-source workload managers and is heavily used across modern HPC clusters.
+
+**References**
+
+- [SLURM classic fair share](https://slurm.schedmd.com/classic_fair_share.html)
+- [SLURM fair tree](https://slurm.schedmd.com/fair_tree.html)

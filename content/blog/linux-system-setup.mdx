@@ -1,0 +1,109 @@
+---
+title: "Linux System Setup From Scratch"
+date: "2025-05-23"
+description: "A repeatable script-driven setup for a fresh Linux box: base packages, oh-my-zsh, SSH keys and jump hosts, and handy shell functions."
+tags: ["linux", "zsh", "dotfiles"]
+categories: ["infrastructure"]
+toc: true
+---
+
+## Base packages
+
+### Arch Linux
+
+```bash
+sudo pacman -Syu gcc make cmake python3 python-pip git wget nvim zsh cloudflared openssh rsync rclone
+sudo chsh -s $(which zsh) $(whoami)
+
+# Then, ensure visudo has:
+# %wheel ALL=(ALL:ALL) ALL
+```
+
+### Debian / Ubuntu
+
+```bash
+# To add 'myuser' to the 'sudo' group
+sudo usermod -aG sudo myuser
+```
+
+### Fedora / RHEL / CentOS
+
+```bash
+# To add 'myuser' to the 'wheel' group
+sudo usermod -aG wheel myuser
+
+# Typically, the wheel group is already configured in /etc/sudoers
+```
+
+## oh-my-zsh installation
+
+```bash
+## Install oh-my-zsh
+sh -c "$(wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O -)"
+
+## Install plugins
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-history-substring-search ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-history-substring-search
+
+## Replace the default plugins with the following
+sed -i.bak '/^plugins=.*/c\
+plugins=(\
+  git\
+  zsh-syntax-highlighting\
+  zsh-autosuggestions\
+  zsh-history-substring-search\
+)' ~/.zshrc
+```
+
+## Generate SSH keys
+
+```bash
+ssh-keygen -t ed25519 -C "pc"
+cat ~/.ssh/id_ed25519.pub
+```
+
+## Add servers to your SSH config
+
+<Callout type="tip">
+  A `ProxyJump`/`ProxyCommand` chain lets you hop through a bastion (here, a Cloudflare Tunnel) straight to an internal
+  cluster node in one `ssh` command.
+</Callout>
+
+```bash
+mkdir -p ~/.ssh
+echo "Host gila
+        Hostname gila.navraj.me
+        User gila
+        Port 22
+        ProxyCommand cloudflared access ssh --hostname %h
+Host sol
+        Hostname sol.asu.edu
+        User sroy85
+        Port 22
+        ProxyJump gila" >> ~/.ssh/config
+```
+
+## A couple of zshrc functions worth stealing
+
+```bash
+mo() {
+  # Usage: mo <directory_name>  — mkdir -p and cd into it in one go
+  if [ -z "$1" ]; then
+    echo "Usage: mo <directory_name>"
+    return 1
+  fi
+
+  if mkdir -p -- "$1"; then
+    if cd -- "$1"; then
+      return 0
+    else
+      echo "Error: Successfully created directory '$1', but could not cd into it." >&2
+      return 1
+    fi
+  else
+    echo "Error: Could not create directory '$1'." >&2
+    return 1
+  fi
+}
+```
