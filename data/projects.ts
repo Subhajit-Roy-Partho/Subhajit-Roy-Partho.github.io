@@ -14,6 +14,7 @@ export type Project = {
   liveLink?: ProjectLink;
   repoLink?: ProjectLink;
   publicationIds?: string[];
+  figure?: { src: string; alt: string; caption: string };
   story: ProjectSection[];
 };
 
@@ -31,6 +32,12 @@ export const projects: Project[] = [
     liveLink: { label: "Run it at oxdna.org", href: "https://oxdna.org" },
     repoLink: { label: "Source on GitHub", href: "https://github.com/lorenzo-rovigatti/oxDNA" },
     publicationIds: ["wisna-dna-paint-2025", "roy-oxview-nar-2026"],
+    figure: {
+      src: "/images/publications/dna-origami-rmsf.jpeg",
+      alt: "A spherical DNA origami modeled in oxDNA, colored by per-nucleotide root-mean-square fluctuation (RMSF)",
+      caption:
+        "A spherical DNA origami simulated in oxDNA, colored by per-nucleotide RMSF (7.10–11.45 nm) — this kind of flexibility map is what let us characterize the origami structures behind the DNA-PAINT cryptography work.",
+    },
     story: [
       {
         heading: "The problem",

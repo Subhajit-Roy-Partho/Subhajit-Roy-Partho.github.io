@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Reveal } from "@/components/reveal";
@@ -84,6 +85,17 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
             </Reveal>
           ))}
         </div>
+
+        {project.figure && (
+          <Reveal delay={0.1} className="mt-14">
+            <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[#f4f5f7]">
+              <div className="relative aspect-[4/3] w-full sm:aspect-[16/10]">
+                <Image src={project.figure.src} alt={project.figure.alt} fill sizes="768px" className="object-contain p-6" />
+              </div>
+            </div>
+            <p className="mt-3 text-sm text-[var(--muted)]">{project.figure.caption}</p>
+          </Reveal>
+        )}
 
         {relatedPubs.length > 0 && (
           <div className="mt-16 border-t border-[var(--border)] pt-10">

@@ -7,6 +7,7 @@ export type Publication = {
   status?: "under review" | "accepted" | "preprint";
   link?: string;
   doi?: string;
+  cover?: { src: string; alt: string };
 };
 
 // Self-name marker: wrap the author's own name in ** so components can bold it.
@@ -67,6 +68,10 @@ export const publications: Publication[] = [
     venue: "Nature Communications",
     year: 2025,
     link: "https://www.nature.com/articles/s41467-025-66338-y",
+    cover: {
+      src: "/images/publications/dna-origami-rmsf.jpeg",
+      alt: "Coarse-grained oxDNA model of a spherical DNA origami, colored by root-mean-square fluctuation (RMSF) from 7.10 to 11.45 nm",
+    },
   },
   {
     id: "korlepara-plas5k-2022",
@@ -77,6 +82,10 @@ export const publications: Publication[] = [
     year: 2022,
     link: "https://doi.org/10.1038/s41597-022-01631-9",
     doi: "10.1038/s41597-022-01631-9",
+    cover: {
+      src: "/images/publications/plas5k-correlation.webp",
+      alt: "Scatter plot of CNN-predicted vs. ground-truth binding free energy (ΔG) for the PLAS-5k dataset, Pearson R = 0.947",
+    },
   },
   {
     id: "roy-zikv-2020",
@@ -87,5 +96,9 @@ export const publications: Publication[] = [
     year: 2020,
     link: "https://doi.org/10.1016/j.bpj.2020.08.036",
     doi: "10.1016/j.bpj.2020.08.036",
+    cover: {
+      src: "/images/publications/zikv-ns1-dimer.jpeg",
+      alt: "Overlaid ribbon structures of the ZIKV NS1 protein β-ladder dimer in its unperturbed and disulfide-reduced states",
+    },
   },
 ];
