@@ -1,4 +1,4 @@
-User-agent: *
-Disallow:
+User-Agent: *
+Allow: /
 
 Sitemap: https://subhajit-roy-partho.github.io/sitemap.xml
