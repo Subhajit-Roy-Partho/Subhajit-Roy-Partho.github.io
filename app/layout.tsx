@@ -37,6 +37,30 @@ gtag('js', new Date());
 gtag('config', '${GA_ID}');
 `;
 
+const SEO_JSONLD = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: "Subhajit Roy — Computational Biophysicist",
+      url: profile.links.portfolio,
+      description: profile.summary,
+    },
+    {
+      "@type": "Person",
+      name: profile.name,
+      url: profile.links.portfolio,
+      jobTitle: profile.role,
+      email: profile.email,
+      affiliation: {
+        "@type": "Organization",
+        name: "Arizona State University",
+      },
+      sameAs: [profile.links.github, profile.links.linkedin, profile.links.scholar],
+    },
+  ],
+}).replace(/</g, "\\u003c");
+
 const THEME_INIT = `
 (function () {
   try {
@@ -59,6 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
         />
         <script dangerouslySetInnerHTML={{ __html: GA_INIT }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: SEO_JSONLD }} />
       </head>
       <body className="noise min-h-screen antialiased" suppressHydrationWarning>
         <ScrollProgress />
