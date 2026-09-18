@@ -1131,7 +1131,7 @@ export function ElectrostaticSimulator() {
 
   return (
     <div className="mt-12">
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         {/* apparatus */}
         <div className="min-w-0">
           <div className="card-surface p-4 sm:p-5">
@@ -1179,7 +1179,7 @@ export function ElectrostaticSimulator() {
         </div>
 
         {/* controls */}
-        <aside className="card-surface p-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+        <aside className="card-surface min-w-0 p-5 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
           <ControlGroup title="Power supply & material">
             <Slider
               id="sl-v0"
