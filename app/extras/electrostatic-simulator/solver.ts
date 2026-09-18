@@ -14,6 +14,20 @@ export const CELL = 1 / CELLS_PER_CM; // 0.125 cm per cell
 export const NX = PAPER_W * CELLS_PER_CM + 1; // 241 columns
 export const NY = PAPER_H * CELLS_PER_CM + 1; // 145 rows
 
+/** Discretization derived from a paper sheet size (cm). */
+export interface GridShape {
+  nx: number;
+  ny: number;
+  cell: number;
+  w: number;
+  h: number;
+}
+
+/** Grid for a paper sheet of w x h cm at the fixed 8 cells/cm resolution. */
+export function gridOf(w: number, h: number): GridShape {
+  return { nx: Math.round(w * CELLS_PER_CM) + 1, ny: Math.round(h * CELLS_PER_CM) + 1, cell: CELL, w, h };
+}
+
 export interface SimParams {
   /** Applied potential of the point conductor, V. */
   V0: number;
@@ -31,6 +45,10 @@ export interface SimParams {
   barLen: number;
   /** Ground bar orientation, degrees (0 = horizontal, 90 = vertical). */
   barAngleDeg: number;
+  /** Paper sheet width, cm. */
+  paperW: number;
+  /** Paper sheet height, cm. */
+  paperH: number;
 }
 
 export const DEFAULT_PARAMS: SimParams = {
@@ -43,11 +61,25 @@ export const DEFAULT_PARAMS: SimParams = {
   by: 9,
   barLen: 15,
   barAngleDeg: 90,
+  paperW: 30,
+  paperH: 18,
 };
 
-export interface SolveResult {
+/** Grid geometry attached to every solve result. */
+export interface GridInfo {
+  /** Paper sheet width, cm. */
+  paperW: number;
+  /** Paper sheet height, cm. */
+  paperH: number;
+  /** Grid resolution. */
+  nx: number;
+  ny: number;
+  cell: number;
+}
+
+export interface SolveResult extends GridInfo {
   params: SimParams;
-  /** Potential field, index i + j*NX. */
+  /** Potential field, index i + j*nx. */
   V: Float64Array;
   /** x component of E, V/cm. Zero inside conductors. */
   Ex: Float64Array;
@@ -98,8 +130,8 @@ const LEVELS = 5; // 241x145 -> 121x73 -> 61x37 -> 31x19 -> 16x10
 const SMOOTH_PRE = 2;
 const SMOOTH_POST = 2;
 
-export function onPaper(x: number, y: number): boolean {
-  return x >= 0 && x <= PAPER_W && y >= 0 && y <= PAPER_H;
+export function onPaper(p: SimParams, x: number, y: number): boolean {
+  return x >= 0 && x <= p.paperW && y >= 0 && y <= p.paperH;
 }
 
 /** Continuous (sub-cell) point-conductor test used for probes and seeding. */
@@ -155,11 +187,11 @@ function barCorners(p: SimParams): [number, number][] {
  * overlap — that would inflate the coarse conductor by a whole extra
  * row/column, and phantom off-paper squares would over-pin coarse grids.
  */
-function polyOverlapsCell(poly: [number, number][], x0: number, y0: number, cell: number): boolean {
+function polyOverlapsCell(poly: [number, number][], x0: number, y0: number, cell: number, w: number, h: number): boolean {
   const x0s = Math.max(x0, 0) + cell / 10;
   const y0s = Math.max(y0, 0) + cell / 10;
-  const x1s = Math.min(x0 + cell, PAPER_W) - cell / 10;
-  const y1s = Math.min(y0 + cell, PAPER_H) - cell / 10;
+  const x1s = Math.min(x0 + cell, w) - cell / 10;
+  const y1s = Math.min(y0 + cell, h) - cell / 10;
   if (x1s <= x0s || y1s <= y0s) return false; // cell is effectively off-paper
   const axes: [number, number][] = [];
   // Axes from the polygon's edge normals.
@@ -198,8 +230,8 @@ function polyOverlapsCell(poly: [number, number][], x0: number, y0: number, cell
 
 /** True if the point-disk intersects the cell square (closest-point test). */
 function diskOverlapsCell(p: SimParams, x0: number, y0: number, cell: number): boolean {
-  const x1 = Math.min(x0 + cell, PAPER_W);
-  const y1 = Math.min(y0 + cell, PAPER_H);
+  const x1 = Math.min(x0 + cell, p.paperW);
+  const y1 = Math.min(y0 + cell, p.paperH);
   const dx = Math.max(x0 - p.cx, 0, p.cx - x1);
   const dy = Math.max(y0 - p.cy, 0, p.cy - y1);
   return dx * dx + dy * dy <= p.rp * p.rp;
@@ -254,7 +286,7 @@ export function makeMask(
     for (let i = 0; i < ncols; i++) {
       const x = i * cell;
       if (sampleBarArea) {
-        if (barPoly ? polyOverlapsCell(barPoly, x, y, cell) : barCells(i, j, x, y)) {
+        if (barPoly ? polyOverlapsCell(barPoly, x, y, cell, p.paperW, p.paperH) : barCells(i, j, x, y)) {
           mask[row + i] = 1;
         }
       } else if (barCells(i, j, x, y)) {
@@ -653,10 +685,11 @@ export function luSolve(lu: Float64Array, piv: Int32Array, n: number, b: Float64
  */
 export function buildLevels(p: SimParams): MgLevel[] {
   const levels: MgLevel[] = [];
-  let ncols = NX;
-  let nrows = NY;
-  let cell = CELL;
-  for (let k = 0; k < LEVELS; k++) {
+  const g0 = gridOf(p.paperW, p.paperH);
+  let ncols = g0.nx;
+  let nrows = g0.ny;
+  let cell = g0.cell;
+  for (let k = 0; k < LEVELS && ncols >= 3 && nrows >= 3; k++) {
     // Node sampling reproduces the fine geometry at coarse resolution, but a
     // conductor can vanish entirely when no node center falls inside it (the
     // point disk on the coarsest 16x10 grid, whose nodes all miss its r = 0.9 cm;
@@ -879,28 +912,29 @@ function multigridSolve(
  */
 export function solve(p: SimParams): SolveResult {
   const { v: V, mask, cycles: iterations, converged } = multigridSolve(p);
+  const { nx, ny, cell } = gridOf(p.paperW, p.paperH);
 
   // E components by central differences; zero inside conductor cells.
-  const Ex = new Float64Array(NX * NY);
-  const Ey = new Float64Array(NX * NY);
-  for (let j = 0; j < NY; j++) {
-    const jUp = j + 1 < NY ? j + 1 : j;
+  const Ex = new Float64Array(nx * ny);
+  const Ey = new Float64Array(nx * ny);
+  for (let j = 0; j < ny; j++) {
+    const jUp = j + 1 < ny ? j + 1 : j;
     const jDn = j - 1 >= 0 ? j - 1 : j;
-    const row = j * NX;
-    const rowUp = jUp * NX;
-    const rowDn = jDn * NX;
-    for (let i = 0; i < NX; i++) {
+    const row = j * nx;
+    const rowUp = jUp * nx;
+    const rowDn = jDn * nx;
+    for (let i = 0; i < nx; i++) {
       const idx = row + i;
       if (mask[idx] !== 0) continue;
       const iL = i > 0 ? i - 1 : i;
-      const iR = i < NX - 1 ? i + 1 : i;
-      Ex[idx] = -(V[row + iR] - V[row + iL]) / (2 * CELL);
-      Ey[idx] = -(V[rowUp + i] - V[rowDn + i]) / (2 * CELL);
+      const iR = i < nx - 1 ? i + 1 : i;
+      Ex[idx] = -(V[row + iR] - V[row + iL]) / (2 * cell);
+      Ey[idx] = -(V[rowUp + i] - V[rowDn + i]) / (2 * cell);
     }
   }
 
   let maxE = 0;
-  for (let k = 0; k < NX * NY; k++) {
+  for (let k = 0; k < nx * ny; k++) {
     if (mask[k] !== 0) continue;
     const mag = Math.hypot(Ex[k], Ey[k]);
     if (mag > maxE) maxE = mag;
@@ -910,6 +944,11 @@ export function solve(p: SimParams): SolveResult {
 
   return {
     params: p,
+    paperW: p.paperW,
+    paperH: p.paperH,
+    nx,
+    ny,
+    cell,
     V,
     Ex,
     Ey,
@@ -934,14 +973,15 @@ export function solve(p: SimParams): SolveResult {
 function geometryFactor(p: SimParams, V: Float64Array, Ex: Float64Array, Ey: Float64Array): number {
   const rc = p.rp + 1.2;
   const ds = (2 * Math.PI * rc) / 360;
+  const g = gridOf(p.paperW, p.paperH);
   let sum = 0;
   let valid = 0;
   for (let k = 0; k < 360; k++) {
     const th = (2 * Math.PI * k) / 360;
     const x = p.cx + rc * Math.cos(th);
     const y = p.cy + rc * Math.sin(th);
-    if (!onPaper(x, y) || isInBar(p, x, y)) continue;
-    const { ex, ey } = fieldAtArrays(V, Ex, Ey, x, y);
+    if (!onPaper(p, x, y) || isInBar(p, x, y)) continue;
+    const { ex, ey } = fieldAtArrays(g, V, Ex, Ey, x, y);
     sum += Math.hypot(ex, ey);
     valid++;
   }
@@ -949,29 +989,35 @@ function geometryFactor(p: SimParams, V: Float64Array, Ex: Float64Array, Ey: Flo
   return (sum * ds * (360 / valid)) / p.V0;
 }
 
-function bilinearIndex(xCm: number, yCm: number): { i: number; j: number; tx: number; ty: number } | null {
+function bilinearIndex(g: GridShape, xCm: number, yCm: number): { i: number; j: number; tx: number; ty: number } | null {
   if (!Number.isFinite(xCm) || !Number.isFinite(yCm)) return null;
-  let fx = xCm / CELL;
-  let fy = yCm / CELL;
-  fx = Math.max(0, Math.min(NX - 1, fx));
-  fy = Math.max(0, Math.min(NY - 1, fy));
-  const i = Math.min(Math.floor(fx), NX - 2);
-  const j = Math.min(Math.floor(fy), NY - 2);
+  let fx = xCm / g.cell;
+  let fy = yCm / g.cell;
+  fx = Math.max(0, Math.min(g.nx - 1, fx));
+  fy = Math.max(0, Math.min(g.ny - 1, fy));
+  const i = Math.min(Math.floor(fx), g.nx - 2);
+  const j = Math.min(Math.floor(fy), g.ny - 2);
   return { i, j, tx: fx - i, ty: fy - j };
 }
 
+/** Grid shape matching an existing solve result's discretization. */
+export function resultGrid(result: SolveResult): GridShape {
+  return { nx: result.nx, ny: result.ny, cell: result.cell, w: result.paperW, h: result.paperH };
+}
+
 function fieldAtArrays(
+  g: GridShape,
   V: Float64Array,
   Ex: Float64Array,
   Ey: Float64Array,
   xCm: number,
   yCm: number
 ): { ex: number; ey: number } {
-  const bl = bilinearIndex(xCm, yCm);
+  const bl = bilinearIndex(g, xCm, yCm);
   if (!bl) return { ex: 0, ey: 0 };
-  const a = bl.j * NX + bl.i;
+  const a = bl.j * g.nx + bl.i;
   const b = a + 1;
-  const c = a + NX;
+  const c = a + g.nx;
   const d = c + 1;
   const tx = bl.tx;
   const ty = bl.ty;
@@ -984,11 +1030,12 @@ function fieldAtArrays(
 export function potAt(result: SolveResult, xCm: number, yCm: number): number {
   if (isInPoint(result.params, xCm, yCm)) return result.params.V0;
   if (isInBar(result.params, xCm, yCm)) return 0;
-  const bl = bilinearIndex(xCm, yCm);
+  const g: GridShape = resultGrid(result);
+  const bl = bilinearIndex(g, xCm, yCm);
   if (!bl) return 0;
-  const a = bl.j * NX + bl.i;
+  const a = bl.j * g.nx + bl.i;
   const b = a + 1;
-  const c = a + NX;
+  const c = a + g.nx;
   const d = c + 1;
   const tx = bl.tx;
   const ty = bl.ty;
@@ -1005,7 +1052,7 @@ export function fieldAt(result: SolveResult, xCm: number, yCm: number): { ex: nu
   if (isInPoint(result.params, xCm, yCm) || isInBar(result.params, xCm, yCm)) {
     return { ex: 0, ey: 0 };
   }
-  return fieldAtArrays(result.V, result.Ex, result.Ey, xCm, yCm);
+  return fieldAtArrays(resultGrid(result), result.V, result.Ex, result.Ey, xCm, yCm);
 }
 
 /* ------------------------------------------------------------------ */
@@ -1091,11 +1138,11 @@ export function computeFieldLines(result: SolveResult, lineCount: number): Field
     let x = p.cx + rSeed * Math.cos(th);
     let y = p.cy + rSeed * Math.sin(th);
     // Degenerate layouts: the point may sit inside the bar, so skip bad seeds.
-    if (!onPaper(x, y) || isInBar(p, x, y) || isInPoint(p, x, y)) continue;
+    if (!onPaper(p, x, y) || isInBar(p, x, y) || isInPoint(p, x, y)) continue;
 
     const pts: number[] = [x, y];
     for (let step = 0; step < maxSteps; step++) {
-      if (!onPaper(x, y) || isInBar(p, x, y) || isInPoint(p, x, y)) break;
+      if (!onPaper(p, x, y) || isInBar(p, x, y) || isInPoint(p, x, y)) break;
       const m1Field = fieldAt(result, x, y);
       const m1 = Math.hypot(m1Field.ex, m1Field.ey);
       if (m1 < 0.005) break;
@@ -1109,7 +1156,7 @@ export function computeFieldLines(result: SolveResult, lineCount: number): Field
       const ny = y + dt * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]) / 6;
       // Record the crossing point itself so terminated lines end exactly on the
       // conductor or paper edge (the boundary is reached within one step).
-      if (!onPaper(nx, ny) || isInBar(p, nx, ny) || isInPoint(p, nx, ny)) {
+      if (!onPaper(p, nx, ny) || isInBar(p, nx, ny) || isInPoint(p, nx, ny)) {
         pts.push(nx, ny);
         break;
       }
@@ -1192,12 +1239,12 @@ export function computeContours(result: SolveResult, levelCount: number): LevelS
   for (let k = 1; k <= levelCount; k++) {
     const iso = (result.params.V0 * k) / (levelCount + 1);
     const segs: number[] = [];
-    for (let j = 0; j < NY - 1; j++) {
-      const r0 = j * NX;
-      const r1 = (j + 1) * NX;
-      const y0 = j * CELL;
-      const y1 = (j + 1) * CELL;
-      for (let i = 0; i < NX - 1; i++) {
+    for (let j = 0; j < result.ny - 1; j++) {
+      const r0 = j * result.nx;
+      const r1 = (j + 1) * result.nx;
+      const y0 = j * result.cell;
+      const y1 = (j + 1) * result.cell;
+      for (let i = 0; i < result.nx - 1; i++) {
         const v: [number, number, number, number] = [V[r0 + i], V[r0 + i + 1], V[r1 + i + 1], V[r1 + i]];
         let bits = 0;
         if (v[0] >= iso) bits |= 1;
@@ -1205,8 +1252,8 @@ export function computeContours(result: SolveResult, levelCount: number): LevelS
         if (v[2] >= iso) bits |= 4;
         if (v[3] >= iso) bits |= 8;
         if (bits === 0 || bits === 15) continue;
-        const x0 = i * CELL;
-        const x1 = (i + 1) * CELL;
+        const x0 = i * result.cell;
+        const x1 = (i + 1) * result.cell;
         for (const [e1, e2] of MS_CASES[bits]) {
           const p1 = crossingOnEdge(v, iso, e1, x0, y0, x1, y1);
           const p2 = crossingOnEdge(v, iso, e2, x0, y0, x1, y1);
@@ -1252,8 +1299,8 @@ export function computeVectorSamples(result: SolveResult, spacingCm: number): Ve
   const p = result.params;
   const raw: { x: number; y: number; ex: number; ey: number; disp: number }[] = [];
 
-  for (let y = 0; y <= PAPER_H; y += spacingCm) {
-    for (let x = 0; x <= PAPER_W; x += spacingCm) {
+  for (let y = 0; y <= result.paperH; y += spacingCm) {
+    for (let x = 0; x <= result.paperW; x += spacingCm) {
       if (isInPoint(p, x, y) || isInBar(p, x, y)) continue;
       const { ex, ey } = fieldAt(result, x, y);
       const mag = Math.hypot(ex, ey);

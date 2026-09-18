@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/publications", label: "Publications" },
   { href: "/cv", label: "CV" },
   { href: "/blog", label: "Blog" },
+  { href: "/extras/electrostatic-simulator", label: "Extras" },
 ];
 
 export function Nav() {

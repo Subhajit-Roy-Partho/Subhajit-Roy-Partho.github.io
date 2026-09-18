@@ -86,11 +86,12 @@ export default function ElectrostaticSimulatorPage() {
           <div className="card-surface p-5">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--accent)]">The solver</p>
             <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
-              The sheet is sampled at 8 cells/cm — 241 × 145 cells for the 30 × 18 cm paper. The code sets V₀ on the
-              disc and 0 V on the bar, then solves Laplace&rsquo;s equation with a conjugate-gradient iteration
-              preconditioned by a five-level multigrid V-cycle. Paper edges are insulating, so potential cannot leak
-              across them. A solve reaches the field to about a tenth of a percent of V₀ in roughly fifty steps —
-              a fraction of a second in the browser.
+              The sheet is sampled at 8 cells/cm — 241 × 145 cells for the default 30 × 18 cm paper; the Sheet
+              size control scales the whole experiment from half to double size at that same resolution. The code
+              sets V₀ on the disc and 0 V on the bar, then solves Laplace&rsquo;s equation with a conjugate-gradient
+              iteration preconditioned by a five-level multigrid V-cycle. Paper edges are insulating, so potential
+              cannot leak across them. A solve reaches the field to about a tenth of a percent of V₀ in roughly
+              fifty steps — a fraction of a second in the browser.
             </p>
           </div>
           <div className="card-surface p-5">
