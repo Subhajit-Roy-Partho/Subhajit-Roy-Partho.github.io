@@ -7,7 +7,15 @@ export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = profile.links.portfolio;
-  const staticRoutes = ["", "/about", "/research", "/publications", "/cv", "/blog"];
+  const staticRoutes = [
+    "",
+    "/about",
+    "/research",
+    "/publications",
+    "/cv",
+    "/blog",
+    "/extras/electrostatic-simulator",
+  ];
   const blogRoutes = getAllSlugs().map((slug) => `/blog/${slug}`);
   const projectRoutes = projects.map((p) => `/research/${p.id}`);
 
