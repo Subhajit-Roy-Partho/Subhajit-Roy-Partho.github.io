@@ -30,6 +30,23 @@ MMFF94s     MMFF94s force field.
 UFF         Universal Force Field.
 ```
 
+## Choosing a basis set
+
+Hand the pre-optimized geometry to the quantum engine with a Karlsruhe/Ahlrichs basis: `def2-SVP` (polarized valence double-ζ) for quick runs, `def2-TZVP` (triple-ζ) when you need more accuracy. The family is all-electron across H–Kr; for Rb–Rn use the matching `def2-ECP` effective core potentials. Definitions come from the Basis Set Exchange.
+
+## Convergence criteria
+
+For reference, ORCA's stock geometry-optimization presets:
+
+```text
+NormalOpt   TolE 5e-6 Eh · TolMaxG 3e-4 · TolRMSG 1e-4 · TolMaxD 4e-3 bohr · TolRMSD 2e-3
+TightOpt    TolE 1e-6 Eh · TolMaxG 1e-4 · TolRMSG 3e-5 · TolMaxD 1e-3 bohr · TolRMSD 6e-4
+```
+
+## Open Babel & Avogadro
+
+Open Babel 3 renamed the `babel` binary to `obabel`. The maintained minimization entry points are `obminimize` (`-ff <ffid>`, `-n <steps>`, `-c <crit>`) and the one-shot `obabel in -O out --minimize --ff <ffid>` used above. In Avogadro, the built-in minimizer lives under **Extensions → Optimize Geometry** (`Ctrl+Alt+O`), with the force field and convergence criteria configurable there. Note that MMFF94 and GAFF are not parameterized for charged or radical species.
+
 **References**
 
 - [Open Babel: forcefield energy and minimization](https://open-babel.readthedocs.io/en/latest/Command-line_tools/babel.html#forcefield-energy-and-minimization)

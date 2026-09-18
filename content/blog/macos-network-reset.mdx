@@ -7,6 +7,18 @@ categories: ["misc"]
 toc: false
 ---
 
+## Newer macOS: prefer these first
+
+Try the officially-supported routes before deleting anything:
+
+- **Forget This Network** — System Settings → Wi-Fi → click **Details…** next to the network → **Forget This Network**.
+- **Delete and re-create the Wi-Fi service** — System Settings → Network.
+- From the command line:
+
+```bash
+networksetup -removepreferredwirelessnetwork en0 "<SSID>"
+```
+
 ## Reset a Mac's network settings
 
 1. Turn off Wi-Fi.
@@ -19,6 +31,15 @@ toc: false
    - `NetworkInterfaces.plist`
    - `preferences.plist`
 5. Move them to the trash and restart.
+
+## What you're actually resetting
+
+Deleting those plists rebuilds the network stack, but the method is community guidance — Apple has never officially recommended it. It resets the network service definitions: BSD device names, service order and locations, and every saved known network. You'll have to re-enter Wi-Fi passwords afterwards, and VPN/proxy configurations can be wiped too — back the plists up first (copy them to a folder before trashing) so you can restore if anything breaks.
+
+Two caveats on newer releases:
+
+- On Big Sur and later, the known-networks list moved to `/Library/Preferences/com.apple.wifi.known-networks.plist`.
+- On recent Sonoma builds, `com.apple.airport.preferences.plist` is reportedly no longer updated.
 
 **Reference**
 

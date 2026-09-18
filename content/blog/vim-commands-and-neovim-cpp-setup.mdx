@@ -24,6 +24,27 @@ toc: true
 
 `:set foldmethod=indent` folds lines by indentation.
 
+### Line numbers
+
+- `:set number` — absolute line numbers; `:set relativenumber` — distances from the cursor.
+- `:set number relativenumber` — current line shows its real number, everything else relative to it.
+- `:set nonumber norelativenumber` — back to no numbers.
+
+### Buffers
+
+- `:ls` — list open buffers.
+- `:b 2` or `:b file.cpp` — jump to a buffer by number or name.
+- `:bd` — close the current buffer (without quitting Vim).
+
+### Tabs
+
+- `:tabnew file.cpp` — open a file in a new tab.
+- `:tabs` — list tabs and what's in each one; `:tabnext` / `:tabprev` (or `gt` / `gT`) move between them.
+
+### Visual block
+
+- `Ctrl-v` — enter visual block mode; select a column of lines, press `I` (or `A`) to insert at the start (or end) of every selected line, then press `Esc` to apply to all of them.
+
 ## Neovim for C++ (NvChad)
 
 1. Install `mason.nvim`. Add `M.plugins = "custom.plugins"` to `chadrc.lua` under `~/.config/nvim/lua/custom`.

@@ -34,6 +34,12 @@ sudo usermod -aG developers john
 newgrp developers
 ```
 
+Delete a group (fails if it's still a user's primary group):
+
+```bash
+sudo groupdel mygroup
+```
+
 ## Users
 
 Create a user with a specific home directory, shell, and group memberships:
@@ -46,4 +52,17 @@ Set or change that user's password:
 
 ```bash
 sudo passwd subho
+```
+
+Delete a user and their home directory (`-r` removes the home dir and mail spool):
+
+```bash
+sudo userdel -r someuser
+```
+
+Inspect a user's numeric IDs and group memberships:
+
+```bash
+id someuser     # uid, gid, and every group they're in
+groups someuser # group names only
 ```

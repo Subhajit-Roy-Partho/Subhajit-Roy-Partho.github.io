@@ -7,6 +7,8 @@ categories: ["infrastructure"]
 toc: false
 ---
 
+Cogli2 is an OpenGL tool for visualizing configurations of coarse-grained simulations — mainly the oxDNA/oxRNA DNA-nanotechnology systems — and making publication-ready figures. It comes from the oxDNA ecosystem, is maintained by Lorenzo Rovigatti and Flavio Romano, and is hosted on SourceForge under the project name `cogli1`.
+
 ## Ubuntu libraries
 
 - `libxrandr-dev`
@@ -29,3 +31,23 @@ endif(CONDA)
 ```
 
 Adjust the path to match your actual conda installation.
+
+## Building from source
+
+Build out-of-source; the executable lands in `build/bin/`:
+
+```bash
+cd cogli2
+mkdir build && cd build
+cmake ..
+make -j4
+```
+
+Useful CMake options:
+
+- `-DDebug=ON`
+- `-DG=ON`
+- `-DLR_TETRA=ON` — DNA colour scheme
+- `-DNOPNG=ON` — skip libpng; sometimes necessary on macOS
+
+On macOS, `-DNOPNG=ON` may be needed, and the Xorg-ish development libraries listed under Ubuntu libraries above must be installed regardless.

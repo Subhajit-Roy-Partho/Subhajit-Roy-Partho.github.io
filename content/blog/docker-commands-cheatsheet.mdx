@@ -11,7 +11,31 @@ toc: false
 
 - `docker run --rm` — deletes the container automatically once it exits.
 - `docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi` — run with NVIDIA GPU access. Substitute `all` with `device=0` to target a specific GPU.
+- `docker run -d nginx` — run in the background (detached) and leave it running.
+- `docker run --name web nginx` — give the container a name instead of a random one.
+- `docker run -p 8080:80 nginx` — map host port `8080` to the container's port `80`.
+- `docker run -v /host/path:/container/path nginx` — bind-mount a host directory into the container.
+- `docker run -e VAR=value nginx` — set an environment variable inside the container.
 
 ## Container commands
 
 - `docker container ls -a` — list every container, running or not.
+
+## Image management
+
+- `docker build -t myimage .` — build an image from the `Dockerfile` in the current directory.
+- `docker pull ubuntu` — download an image without starting a container.
+- `docker images` — list local images.
+- `docker rmi myimage` — delete an image (add the tag if you have several, e.g. `myimage:v1`).
+- `docker tag myimage myimage:v1` — give an image an extra name/tag.
+- `docker image prune` — remove dangling images (untagged layers no longer referenced).
+
+## Everyday operations
+
+- `docker ps -a` — same as `docker container ls -a`: list every container, running or not.
+- `docker logs <container>` — print the container's output.
+- `docker exec -it <container> bash` — open an interactive shell inside a running container.
+- `docker cp <container>:/path/to/file ./file` — copy a file out of a container (reverse the args to copy one in).
+- `docker stop <container>` — stop a running container; `docker rm <container>` — delete a stopped one.
+- `docker system df` — show disk usage, broken down by images, containers, and volumes.
+- `docker system prune -af` — remove all stopped containers, unused networks, and every unused image, without prompting. Volumes are left alone unless you add `--volumes`.

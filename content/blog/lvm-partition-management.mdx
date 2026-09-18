@@ -27,6 +27,26 @@ Verify with:
 df -h
 ```
 
+## Common add-ons worth knowing
+
+Extend a logical volume to fill the whole volume group:
+
+```bash
+lvextend -l +100%FREE vgdata/lv1
+```
+
+The filesystem-grow step afterwards depends on the filesystem: ext4 → `resize2fs /dev/vgdata/lv1`, XFS → `xfs_growfs /mountpoint` (note it takes the mount point, and XFS volumes cannot be shrunk). Or do both in one step:
+
+```bash
+lvextend -r --resizefs /dev/vgdata/lv1
+```
+
+Snapshots of a thin volume:
+
+```bash
+lvcreate -s -n snap1 vgdata/thin1
+```
+
 ## Conclusion
 
 LVM is a great tool if you want robust, if unglamorous, dynamic partition management. BTRFS is simpler to work with, but can cost more CPU than LVM+ext4 — which is why many people still prefer LVM for server systems.

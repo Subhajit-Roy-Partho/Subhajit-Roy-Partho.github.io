@@ -28,6 +28,34 @@ tleap -s -f tleap.in > out.txt
   AMBER's `leaprc` files live at `$AMBERHOME/dat/leap/cmd`.
 </Callout>
 
+## Force field choices
+
+For the DNA strands, the standard AMBER force fields to pick from:
+
+```text
+ff99bsc0    legacy bsc0 correction
+OL15        bsc0 + OL1 (ε/ζ) + OL4 (χ)
+bsc1        parmbsc1
+OL21        OL15 + OL21 (α/γ)       <- current default
+```
+
+Pair the DNA force field with `ff14SB` for protein and a water `leaprc` — `leaprc.water.tip3p` or `leaprc.water.opc`.
+
+## Building the system in tleap
+
+The canonical build for a plain DNA duplex:
+
+```bash
+source leaprc.DNA.OL15      # or leaprc.DNA.bsc1 / leaprc.DNA.OL21
+source leaprc.water.tip3p   # or leaprc.water.opc
+dna = loadpdb dna.pdb
+addions dna Na+ 0           # neutralize
+solvateoct dna TIP3PBOX 8.0
+saveamberparm dna dna.prmtop dna.rst7
+```
+
+During equilibration, hold the DNA geometry in place with positional restraints — start with `&cntrl ntr=1, restraintmask=':1-24', restraint_wt=25.0`, then relax the weight down to roughly 0.5–1.0 kcal/mol·Å⁻² for the equilibration runs. Run `pmemd` with `-ref heat.rst` so the reference coordinates come from your heating-stage output.
+
 ## Homology modeling for a missing residue
 
 The easiest way to install MODELLER is through conda:

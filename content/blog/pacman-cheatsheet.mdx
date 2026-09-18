@@ -15,3 +15,14 @@ toc: false
 ```bash
 sudo pacman -Rcns $(pacman -Qdtq)
 ```
+
+## More that are worth knowing
+
+- `sudo pacman -Syu` — refresh the package database and upgrade every installed package.
+- `pacman -Ss pattern` — search package names and descriptions in the repos; `pacman -Qs pattern` — search the same way, but only among already installed packages.
+- `pacman -Si package` — show info about a repo package; `pacman -Qi package` — show info about a package that's installed locally.
+- `pacman -Qo /usr/bin/vim` — show which installed package owns a file.
+- `pacman -Ql package` — list every file a package installed.
+- `pacman -Qe` — list packages installed explicitly (the ones you asked for, not pulled in as dependencies).
+- `sudo pacman -Sc` — remove unused cached packages, keeping only the latest versions of what's installed; a gentler version of `-Scc`, which wipes the whole cache.
+- `sudo pacman -D --asdeps package` — mark a package as a dependency, so it shows up as an orphan if nothing needs it anymore; `sudo pacman -D --asexplicit package` — mark it as explicitly installed so orphan detection (`-Qdt`) skips it.

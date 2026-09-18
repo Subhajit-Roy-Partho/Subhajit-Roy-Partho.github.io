@@ -22,3 +22,33 @@ sed -e "s/.*=/v2:sha256:/" -i Fingerprints/Local.txt
 
 3. On the server, configure the screen layout by dragging the new PC to the left or right of the current one, then start the server.
 4. On the client, connect using the server's IP. If everything's set up correctly, the client will show the server's SSL fingerprint and prompt that the configuration is ready.
+
+## Firewall & ports
+
+Barrier speaks TCP on port `24800`. Start the server with `barriers --address :24800` and point clients at `serverIP:24800`. Make sure the port is open in the firewalls on both machines.
+
+## How the fingerprint handshake works
+
+Every machine (server and clients alike) generates its own self-signed `Barrier.pem` under `~/.local/share/barrier/SSL/` and writes its SHA-256 fingerprint to `SSL/Fingerprints/Local.txt`. When a client first connects it must approve the server's fingerprint; approved fingerprints are stored in `SSL/Fingerprints/TrustedServers.txt`. Since v2.4.0 the fingerprint hash is SHA-256 — older builds relied on SHA-1 (CVE-2021-42072 / CVE-2021-42073).
+
+## The Synergy question
+
+Barrier is the maintained community fork of Synergy, but it is **not** protocol-compatible with it — every machine needs to run Barrier (or a compatible client). Development has been largely dormant since the last stable release, v2.4.0 (2022), and the community has been moving toward Input Leap and Deskflow; the TLS setup above applies to those as well.
+
+## Troubleshooting
+
+- **Fingerprint mismatch / "server fingerprint changed":** the stored fingerprint no longer matches the server's certificate. Remove the stale entry from the client's `SSL/Fingerprints/TrustedServers.txt` (and from `Fingerprints/Local.txt` if you regenerated the certificate), then approve the new fingerprint when prompted.
+
+## Autostart on login
+
+Drop a `.desktop` file into `~/.config/autostart/` that launches `barriers` on the server (or `barrierc` on the client) at login:
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=Barrier Server
+Exec=barriers --address :24800
+X-GNOME-Autostart-enabled=true
+```
+
+The client's `Exec=` line would be `barrierc serverIP:24800` instead.

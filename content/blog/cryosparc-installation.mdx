@@ -26,6 +26,8 @@ For a single-PC setup, only the master package is required.
 tar -xzvf cryosparc_master.tar.gz
 ```
 
+Install as a **non-root** user — run the `install.sh` steps below from a regular account, not as root.
+
 5. Pick a database location — scratch space works well on a cluster, e.g. `/scratch/cryo/cryoDB`.
 6. Install from the extracted folder:
 
@@ -33,7 +35,26 @@ tar -xzvf cryosparc_master.tar.gz
 ./install.sh --license $LICENSE_ID --hostname hostname --dbpath /scratch/cryo/cryoDB --port 61000
 ```
 
+Single workstation: add `--standalone` with `--worker_path /path/to/cryosparc_worker` so the install bundles the worker setup in the same run.
+
 Get the hostname with `hostname`. On a cluster this changes with node allocation, so update `config.sh` accordingly — adding `export CRYOSPARC_FORCE_HOSTNAME=true` to `config.sh` also helps.
+
+## Worker nodes
+
+On each compute node, extract the worker tarball and install it with just the license:
+
+```bash
+tar -xzvf cryosparc_worker.tar.gz
+./install.sh --license $LICENSE_ID
+```
+
+Then point the worker at the master:
+
+```bash
+bin/cryosparcw connect <master-ip> <worker-ip>
+```
+
+(On a single workstation, the `--standalone` install above has already made this connection.)
 
 ## Starting it up
 
@@ -55,6 +76,8 @@ Elevate that user to admin:
 cryosparcm updateuser --email "<email address>" --admin "true"
 ```
 
+Since v5.0 these commands moved under the `user` subcommand: `cryosparcm user create`, `cryosparcm user list`, `cryosparcm user update`, `cryosparcm user resetpassword`.
+
 CryoSPARC is now ready at port 61000. On a cluster, forward the port over SSH before opening it in a browser:
 
 ```bash
@@ -62,6 +85,28 @@ ssh -N -L 61000:cg001.sol.asu.edu:61000 user@sol.asu.edu
 ```
 
 (`cg001` is the compute node's id — on a personal machine you can skip this step.) Then open `localhost:61000` in the browser.
+
+## Managing the master
+
+```bash
+bin/cryosparcm stop
+bin/cryosparcm status
+bin/cryosparcm licensestatus
+```
+
+`stop` shuts the master down cleanly, `status` reports the running services, and `licensestatus` shows the license state — the license ID is checked online during installation.
+
+Service ports and hostname live in `cryosparc_master/config.sh`:
+
+```text
+CRYOSPARC_BASE_PORT         first port in the service range (default 61000)
+CRYOSPARC_MASTER_HOSTNAME   hostname the master advertises
+CRYOSPARC_INSECURE          set to allow plain-HTTP (non-TLS) access
+```
+
+## Troubleshooting
+
+- **`cryosparcm createuser` / `updateuser` are gone:** v5.0+ renamed them to `cryosparcm user create` / `cryosparcm user update` / `cryosparcm user resetpassword` — same flags as above.
 
 **References**
 

@@ -31,6 +31,22 @@ whisper audio.ext --language English --model large -o OutputFolder
 
 For English audio, the `.en` variants (`medium.en`, `small.en`, `tiny.en`) outperform their multilingual counterparts of the same size.
 
+Useful CLI flags:
+
+```bash
+# force a language, skipping auto-detection
+whisper audio.mp3 --language en
+
+# limit output formats: txt, vtt, srt, tsv, json, jsonl — default is "all"
+whisper audio.mp3 --output_format srt vtt
+
+# force CPU; default is cuda when available, otherwise cpu
+whisper audio.mp3 --device cpu
+
+# fp16 is on by default and falls back to fp32 on CPU automatically; pass --fp16 False to force fp32
+whisper audio.mp3 --fp16 False
+```
+
 | Size | Parameters | English-only model | Multilingual model | Required VRAM | Relative speed |
 | --- | --- | --- | --- | --- | --- |
 | tiny | 39 M | `tiny.en` | `tiny` | ~1 GB | ~32x |
@@ -38,6 +54,14 @@ For English audio, the `.en` variants (`medium.en`, `small.en`, `tiny.en`) outpe
 | small | 244 M | `small.en` | `small` | ~2 GB | ~6x |
 | medium | 769 M | `medium.en` | `medium` | ~5 GB | ~2x |
 | large | 1550 M | N/A | `large` | ~10 GB | 1x |
+
+## Choosing a model
+
+`turbo` rounds out the line-up above: ≈6 GB VRAM at roughly 8× large's speed. It's the current CLI default, so `whisper audio.mp3` without a `--model` flag uses it. There is no "plus" model.
+
+`.en` variants exist only for `tiny`, `base`, `small`, and `medium` — not for `turbo` or `large`.
+
+`turbo` is not trained for translation. For `--task translate` (any speech → English) use `medium` or `large`; plain transcription (`--task transcribe`) is the default.
 
 **References**
 

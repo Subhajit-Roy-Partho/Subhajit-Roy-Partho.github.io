@@ -17,6 +17,28 @@ toc: false
    - `time-a-g.nist.gov`
 4. The `(Default)` entry's value is the integer key of whichever server should actually be used — e.g. if `time.google.com` is registered under `3`, set `(Default)` to `3`.
 
+That registry key only feeds the Date & Time control-panel dropdown. The actual Windows Time service reads W32Time settings under `HKLM\SYSTEM\CurrentControlSet\Services\W32Time`, so to change what the service itself syncs from you need `w32tm` below.
+
+## Actually forcing the sync
+
+Diagnose first:
+
+```cmd
+w32tm /query /status
+w32tm /query /peers
+w32tm /resync
+```
+
+Point the service at a specific server:
+
+```cmd
+w32tm /config /manualpeerlist:"time.google.com,0x8" /syncfromflags:manual /update
+net stop w32time && net start w32time
+w32tm /resync
+```
+
+NTP runs over UDP 123 — if a firewall blocks it, `w32tm /resync` fails with "no time data was available".
+
 **Reference**
 
 - [How to change the time server in Windows 10 — The Windows Club](https://www.thewindowsclub.com/change-time-server-windows-10)

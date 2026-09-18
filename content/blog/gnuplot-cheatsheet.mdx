@@ -15,6 +15,8 @@ plot "data.txt" u ($0):4 title "Plotting with x innumeration"
 
 `$0` is the line number, so this plots column 4 against its position in the file.
 
+Column `0` is the pseudo-column `$0` — the zero-based row number — so `plot 'file' using 1` is equivalent to `plot 'file' using 0:1`.
+
 ## Plot a histogram
 
 ```gnuplot
@@ -35,3 +37,45 @@ plot 'angles.txt' using (bin($1, bin_width)):(1.0/total_points) smooth freq with
 - `bin_width` controls the sampling density (bin width).
 - Dividing by `total_points` normalizes the histogram — drop that division for an unnormalized count.
 - `angles.txt` is assumed to be a single column of values.
+
+For grouped or categorical bars, use the `histograms` style instead of manual binning:
+
+```gnuplot
+set style data histograms
+set style histogram clustered
+plot 'file.dat' using 2:xtic(1)
+```
+
+`using 2:xtic(1)` reads the bar heights from column 2 and labels each bar with the text in column 1.
+
+## Saving to a file
+
+```gnuplot
+set terminal pngcairo size 800,600
+set output 'fig.png'
+
+# switch to PDF instead
+set terminal pdfcairo
+set output 'fig.pdf'
+```
+
+After changing `terminal` and `output`, re-run `plot` (or `replot`) so the file actually gets written.
+
+## Multiple panels
+
+```gnuplot
+set multiplot layout 2,2   # 2x2 grid, filled row-major
+plot 'a.dat' using 1:2
+plot 'b.dat' using 1:2
+plot 'c.dat' using 1:2
+plot 'd.dat' using 1:2
+unset multiplot
+```
+
+## Log-scale axes
+
+```gnuplot
+set logscale x    # log x only
+set logscale y
+set logscale xy   # both
+```
