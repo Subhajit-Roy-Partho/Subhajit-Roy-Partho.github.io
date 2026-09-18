@@ -29,6 +29,14 @@ export const metadata: Metadata = {
   },
 };
 
+const GA_ID = "G-X8WMNMXDWQ";
+const GA_INIT = `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}');
+`;
+
 const THEME_INIT = `
 (function () {
   try {
@@ -46,6 +54,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${sans.variable} ${display.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+        <script
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        />
+        <script dangerouslySetInnerHTML={{ __html: GA_INIT }} />
       </head>
       <body className="noise min-h-screen antialiased" suppressHydrationWarning>
         <ScrollProgress />
