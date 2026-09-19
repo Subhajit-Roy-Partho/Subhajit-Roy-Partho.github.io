@@ -37,6 +37,14 @@ gtag('js', new Date());
 gtag('config', '${GA_ID}');
 `;
 
+const SW_REGISTER = `
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function () {});
+  });
+}
+`;
+
 const SEO_JSONLD = JSON.stringify({
   "@context": "https://schema.org",
   "@graph": [
@@ -84,6 +92,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <script dangerouslySetInnerHTML={{ __html: GA_INIT }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: SEO_JSONLD }} />
+        <script dangerouslySetInnerHTML={{ __html: SW_REGISTER }} />
       </head>
       <body className="noise min-h-screen antialiased" suppressHydrationWarning>
         <ScrollProgress />
