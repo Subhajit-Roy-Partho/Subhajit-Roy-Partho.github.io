@@ -235,6 +235,35 @@ export const projects: Project[] = [
     ],
   },
   {
+    id: "firebrat",
+    name: "Firebrat",
+    tagline: "Audiobooks for technical books, figures and all",
+    description:
+      "An audiobook generator and reader built for technical books — narrating the text while keeping the figure, formula, or table being talked about visible and highlighted, for readers who find sustained silent reading difficult.",
+    tags: ["Flutter", "FastAPI", "LLM pipeline", "TTS", "Docker"],
+    category: "ml",
+    status: "Live · actively maintained",
+    featured: true,
+    liveLink: { label: "Project site", href: "https://subhajit-roy-partho.github.io/firebrat/" },
+    repoLink: { label: "Source on GitHub", href: "https://github.com/Subhajit-Roy-Partho/firebrat" },
+    story: [
+      {
+        heading: "The problem",
+        body: [
+          "Most audiobook tools treat a PDF as a wall of text to flatten into speech. That works for a novel and falls apart the moment a book says \"as shown in Figure 6.65\" or writes out an equation — the audio either skips the thing you actually need to see, or reads a LaTeX expression aloud as noise.",
+          "Firebrat is built for readers who need the audio to be the primary way through a book, not a background convenience: dyslexic readers, people with low vision or ADHD, or anyone who processes spoken language better than dense printed text. Accessibility — adjustable text size, high-contrast highlighting, short-segment pacing — is a core design decision, not an add-on bolted on afterward.",
+        ],
+      },
+      {
+        heading: "What I built",
+        body: [
+          "The pipeline converts a PDF into a self-contained book package: extraction (marker-pdf + PyMuPDF), LLM compilation that groups pages into sections, writes narration text, and authors LaTeX for the formulas it recognizes, then per-segment TTS with sample-accurate timestamps (Chatterbox).",
+          "The companion Flutter app reads a section at a time, keeps every figure and table for that section visible in a scrollable gallery, renders and highlights the formula currently being spoken, and lets you jump around freely — by tapping any segment, prev/next controls, or autoplay. A FastAPI server distributes packages; download once, then fully offline. Docker images (CPU / GPU / API-only) are published on Docker Hub.",
+        ],
+      },
+    ],
+  },
+  {
     id: "dna-polycubes",
     name: "DNA Polycube Inverse Design",
     tagline: "Working backward from a shape to the blocks that build it",
