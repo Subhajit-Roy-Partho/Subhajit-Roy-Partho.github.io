@@ -246,6 +246,12 @@ export const projects: Project[] = [
     featured: true,
     liveLink: { label: "Project site", href: "https://subhajit-roy-partho.github.io/firebrat/" },
     repoLink: { label: "Source on GitHub", href: "https://github.com/Subhajit-Roy-Partho/firebrat" },
+    figure: {
+      src: "/images/projects/firebrat-listening.webp",
+      alt: "The Firebrat mascot — a happy firebrat listening to a book",
+      caption:
+        "The Firebrat mascot. The name is a nod to the book-eating silverfish's fire-loving cousin — except this one listens to books instead of eating them.",
+    },
     story: [
       {
         heading: "The problem",
