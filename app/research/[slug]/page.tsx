@@ -68,7 +68,18 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         </Reveal>
 
         <Reveal delay={0.1} className="mt-10">
-          <ProjectIllustration id={project.id} />
+          {project.figure && project.figureTop ? (
+            <>
+              <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+                <div className="relative mx-auto aspect-square w-full max-w-md">
+                  <Image src={project.figure.src} alt={project.figure.alt} fill sizes="768px" className="object-contain p-6" />
+                </div>
+              </div>
+              <p className="mt-3 text-sm text-[var(--muted)]">{project.figure.caption}</p>
+            </>
+          ) : (
+            <ProjectIllustration id={project.id} />
+          )}
         </Reveal>
 
         <div className="mt-14 space-y-12">
@@ -86,10 +97,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           ))}
         </div>
 
-        {project.figure && (
+        {project.figure && !project.figureTop && (
           <Reveal delay={0.1} className="mt-14">
             <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-              <div className="relative mx-auto aspect-square w-full max-w-md sm:aspect-square">
+              <div className="relative mx-auto aspect-square w-full max-w-md">
                 <Image src={project.figure.src} alt={project.figure.alt} fill sizes="768px" className="object-contain p-6" />
               </div>
             </div>

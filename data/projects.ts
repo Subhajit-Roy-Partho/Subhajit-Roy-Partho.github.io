@@ -15,6 +15,7 @@ export type Project = {
   repoLink?: ProjectLink;
   publicationIds?: string[];
   figure?: { src: string; alt: string; caption: string };
+  figureTop?: boolean;
   story: ProjectSection[];
 };
 
@@ -252,6 +253,7 @@ export const projects: Project[] = [
       caption:
         "The Firebrat mascot. The name is a nod to the book-eating silverfish's fire-loving cousin — except this one listens to books instead of eating them.",
     },
+    figureTop: true,
     story: [
       {
         heading: "The problem",
