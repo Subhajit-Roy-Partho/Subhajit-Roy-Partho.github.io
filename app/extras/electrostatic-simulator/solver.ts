@@ -1274,7 +1274,7 @@ export interface VectorSample {
   /** Sample position, cm. */
   x: number;
   y: number;
-  /** Display field components (physics E divided by epsr). */
+  /** Display field magnitude: the physics |E| in V/cm (epsr-independent at fixed voltage). */
   ex: number;
   ey: number;
   /** |E| displayed by the overlay, V/cm. */
@@ -1305,7 +1305,7 @@ export function computeVectorSamples(result: SolveResult, spacingCm: number): Ve
       const { ex, ey } = fieldAt(result, x, y);
       const mag = Math.hypot(ex, ey);
       if (mag <= 1e-12) continue;
-      raw.push({ x, y, ex, ey, disp: mag / p.epsr });
+      raw.push({ x, y, ex, ey, disp: mag });
     }
   }
 

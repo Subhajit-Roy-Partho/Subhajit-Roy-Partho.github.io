@@ -32,9 +32,10 @@ a grounded metal bar, and the potential field between them.
   fixed conductor voltages, εᵣ drops out of Laplace's equation, so the pattern
   of equal-potential lines never moves. The simulator uses this honestly:
   nudging εᵣ leaves the pattern untouched.
-- **Displayed E = E/εᵣ.** The field for a given conductor charge is screened
-  by the dielectric, `E ∝ 1/εᵣ`. The arrows, field-line brightness, and the
-  probe readout all divide by εᵣ, so the field visibly fades as εᵣ rises.
+- **V and E are εᵣ-independent.** With a uniform dielectric and
+  fixed conductor voltages, εᵣ drops out of Laplace's equation, so the
+  potentials, the field, the arrows, and the field-line brightness never
+  move as εᵣ rises — only C\* and U\* grow.
 - **C\* and U\* scale like εᵣ.** The readouts are normalized estimates
   (g₀ = ring integral of |E| at radius rp + 1.2 cm), so C\* = g₀·εᵣ and
   U\* = ½·C\*·V₀² are in arbitrary units.

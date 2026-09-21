@@ -521,7 +521,7 @@ export function ElectrostaticSimulator() {
 
   const drawFieldLines = useCallback((ctx: CanvasRenderingContext2D, lines: FieldLine[], params: SimParams) => {
     const accent = cssVar("--accent", "#0891b2");
-    const alpha = clamp(0.5 + 0.4 / params.epsr, 0.28, 0.92);
+    const alpha = 0.9;
     ctx.save();
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -876,7 +876,7 @@ export function ElectrostaticSimulator() {
 
     const v = potAt(sim.result, anchor.x, anchor.y);
     const f = fieldAt(sim.result, anchor.x, anchor.y);
-    const mag = Math.hypot(f.ex, f.ey) / (uiRef.current.params.epsr || 1);
+    const mag = Math.hypot(f.ex, f.ey);
     const text = `V = ${v.toFixed(2)} V   |E| = ${mag.toFixed(2)} V/cm`;
 
     ctx.save();
@@ -1065,7 +1065,7 @@ export function ElectrostaticSimulator() {
     }
     const v = potAt(sim.result, x, y);
     const f = fieldAt(sim.result, x, y);
-    const mag = Math.hypot(f.ex, f.ey) / (params.epsr || 1);
+    const mag = Math.hypot(f.ex, f.ey);
     setCoordReadout({ state: "ok", v, mag, th: (Math.atan2(f.ey, f.ex) * 180) / Math.PI });
 
     const last = lastCoordProbeRef.current;
@@ -1222,7 +1222,7 @@ export function ElectrostaticSimulator() {
           };
           refreshDerived();
           setReadouts({
-            maxEDisplay: result.maxE / (params.epsr || 1),
+            maxEDisplay: result.maxE,
             g0: result.g0,
             C: result.Cstar,
             U: result.Ustar,

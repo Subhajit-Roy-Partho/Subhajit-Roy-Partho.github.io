@@ -69,7 +69,7 @@ export default function ElectrostaticSimulatorPage() {
             },
             {
               title: "Raise the dielectric",
-              body: "Bump εᵣ from 1 to 10. Nothing moves — equal potentials are εᵣ-independent — but arrows and field lines fade as E is screened, while C* and U* grow. That is the honest physics, not a bug.",
+              body: "Bump εᵣ from 1 to 10. Nothing moves — V and E are εᵣ-independent at fixed conductor voltages — while C* and U* grow. That is the honest physics, not a bug.",
             },
             {
               title: "Fly the surface",
