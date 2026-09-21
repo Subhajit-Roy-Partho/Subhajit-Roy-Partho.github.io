@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Reveal } from "@/components/reveal";
 import { SectionHeading } from "@/components/section-heading";
 import { ElectrostaticSimulator } from "./electrostatic-simulator";
@@ -10,7 +11,10 @@ export default function ElectrostaticSimulatorPage() {
     <div className="pt-32">
       <section className="container-page section pt-0">
         <Reveal className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--accent)]">
+          <Link href="/extras" className="text-sm text-[var(--muted)] hover:text-[var(--accent)]">
+            ← All extras
+          </Link>
+          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--accent)]">
             Extras · Physics teaching tools
           </p>
           <h1 className="font-display mt-4 text-[clamp(2rem,5vw,3.25rem)] font-semibold leading-tight tracking-tight">

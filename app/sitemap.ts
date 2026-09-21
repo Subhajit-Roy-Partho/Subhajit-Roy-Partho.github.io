@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/publications",
     "/cv",
     "/blog",
+    "/extras",
     "/extras/electrostatic-simulator",
   ];
   const blogRoutes = getAllSlugs().map((slug) => `/blog/${slug}`);
