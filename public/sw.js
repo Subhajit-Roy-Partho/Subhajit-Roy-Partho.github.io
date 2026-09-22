@@ -1,10 +1,17 @@
-/* Service worker: fast repeat loads for a static-export site on GitHub Pages.
-   - /_next/static/*  → cache-first (content-hashed, immutable)
-   - navigations      → network-first (fresh after deploys), cache fallback offline
-   - other same-origin static (images, fonts, icons) → stale-while-revalidate
+/* Service worker: fast repeat loads for a static-export site on GitHub Pages,
+   with freshness winning over cache on every visit (the site deploys often).
+   - /_next/static/*  → cache-first (content-hashed URLs: a new build means new
+     URLs, so a cached copy can never be stale)
+   - navigations      → network-first with forced revalidation; the fresh page
+     refreshes the cache; the cached page serves only when offline
+   - other same-origin (images, fonts, icons, misc) → same network-first +
+     refresh-cache + offline-fallback treatment
    - cross-origin (Google Analytics, etc.) → never touched
+   `cache: "no-cache"` on the fetch forces a conditional revalidation with the
+   server instead of trusting the HTTP cache, so an update always wins; an
+   unchanged response comes back as a tiny 304 round-trip, not a download.
 */
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC_CACHE = `static-${VERSION}`;
 const PAGES_CACHE = `pages-${VERSION}`;
 const ASSETS_CACHE = `assets-${VERSION}`;
@@ -33,30 +40,23 @@ async function cacheFirst(request, cacheName) {
   return response;
 }
 
-async function staleWhileRevalidate(request, cacheName) {
+// Update wins over cache: revalidate with the server first, refresh the
+// cache on success, serve the cached copy only when the network fails.
+async function networkFirst(request, cacheName, fallback) {
   const cache = await caches.open(cacheName);
-  const hit = await cache.match(request);
-  const fetching = fetch(request)
-    .then((response) => {
-      if (response.ok) cache.put(request, response.clone());
-      return response;
-    })
-    .catch(() => undefined);
-  return hit || (await fetching) || Response.error();
-}
-
-async function networkFirstPage(request) {
-  const cache = await caches.open(PAGES_CACHE);
   try {
-    const response = await fetch(request);
+    const response = await fetch(new Request(request, { cache: "no-cache" }));
     if (response.ok) cache.put(request, response.clone());
     return response;
   } catch {
     const hit = await cache.match(request);
     if (hit) return hit;
-    return new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } });
+    return fallback();
   }
 }
+
+const offlinePage = () =>
+  new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" } });
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
@@ -66,7 +66,7 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return; // GA and other third parties untouched
 
   if (request.mode === "navigate") {
-    event.respondWith(networkFirstPage(request));
+    event.respondWith(networkFirst(request, PAGES_CACHE, offlinePage));
     return;
   }
 
@@ -75,11 +75,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (/\.(png|jpe?g|webp|avif|gif|svg|ico|woff2?|ttf)$/i.test(url.pathname)) {
-    event.respondWith(staleWhileRevalidate(request, ASSETS_CACHE));
-    return;
-  }
-
-  // Everything else same-origin (rss, misc files): stale-while-revalidate too.
-  event.respondWith(staleWhileRevalidate(request, ASSETS_CACHE));
+  // Images, fonts, icons, and everything else same-origin: fresh copy wins,
+  // cache refreshes behind it, cached copy covers offline.
+  event.respondWith(networkFirst(request, ASSETS_CACHE, () => Response.error()));
 });
