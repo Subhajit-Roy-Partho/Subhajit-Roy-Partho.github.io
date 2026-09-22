@@ -166,7 +166,7 @@ interface ProbeState {
 
 /** Readout for the coordinate probe: live state of the V / |E| / θ panel. */
 type CoordReadout =
-  | { state: "ok"; v: number; mag: number; th: number }
+  | { state: "ok"; v: number; mag: number; th: number; inside: boolean }
   | { state: "offpaper" }
   | { state: "invalid" }
   | { state: "solving" };
@@ -601,10 +601,11 @@ export function ElectrostaticSimulator() {
     ctx.restore();
   }, []);
 
-  // Free-charge glow on conductor outlines: one accent marker per sigma>0
-  // cell. Normalized against the epsr-INDEPENDENT max boundary |E| (not
-  // maxSigma, which scales with epsr) so the glow visibly brightens as the
-  // dielectric constant rises: alpha = 0.12 + 0.88*epsr*|E|/(10*maxBdryE).
+  // Free-charge halo on conductor outlines: overlapping accent circles
+  // (radius = one cell, centered on each sigma>0 cell) that merge into a
+  // continuous rim. Normalized against the epsr-INDEPENDENT max boundary |E|
+  // (not maxSigma, which scales with epsr) so the halo visibly brightens as
+  // the dielectric constant rises: alpha = 0.25 + 0.75*epsr*|E|/(10*maxBdryE).
   const drawChargeGlow = useCallback((ctx: CanvasRenderingContext2D, result: SolveResult) => {
     const { nx, ny, cell, Ex, Ey, sigma } = result;
     let maxBdryE = 0;
@@ -622,8 +623,10 @@ export function ElectrostaticSimulator() {
       for (let i = 0; i < nx; i++) {
         const sg = sigma[i + j * nx];
         if (sg <= 0) continue;
-        ctx.globalAlpha = clamp(0.12 + (0.88 * sg) / (10 * maxBdryE || 1), 0, 1);
-        ctx.fillRect(i * s, j * s, s, s);
+        ctx.globalAlpha = clamp(0.25 + (0.75 * sg) / (10 * maxBdryE || 1), 0, 1);
+        ctx.beginPath();
+        ctx.arc((i + 0.5) * s, (j + 0.5) * s, s, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
     ctx.restore();
@@ -1095,7 +1098,8 @@ export function ElectrostaticSimulator() {
     const v = potAt(sim.result, x, y);
     const f = fieldAt(sim.result, x, y);
     const mag = Math.hypot(f.ex, f.ey);
-    setCoordReadout({ state: "ok", v, mag, th: (Math.atan2(f.ey, f.ex) * 180) / Math.PI });
+    const inside = isInPoint(params, x, y) || isInBar(params, x, y);
+    setCoordReadout({ state: "ok", v, mag, th: (Math.atan2(f.ey, f.ex) * 180) / Math.PI, inside });
 
     const last = lastCoordProbeRef.current;
     if (!last || last.x !== x || last.y !== y) {
@@ -1506,6 +1510,9 @@ export function ElectrostaticSimulator() {
             {coord?.state === "offpaper" && (
               <p className="mt-1.5 text-[10px] text-[var(--muted)]">That point is off the paper sheet.</p>
             )}
+            {coord?.state === "ok" && coord.inside && (
+              <p className="mt-1.5 text-[10px] text-[var(--muted)]">Inside a conductor — V is pinned and E = 0.</p>
+            )}
             {coord?.state === "solving" && (
               <p className="mt-1.5 text-[10px] text-[var(--muted)]">Solving the field…</p>
             )}
@@ -1532,6 +1539,9 @@ export function ElectrostaticSimulator() {
               onChange={(v) => setParams((p) => ({ ...p, epsr: v }))}
               format={(v) => v.toFixed(2)}
             />
+            <p className="-mt-2 text-[10px] leading-relaxed text-[var(--muted)]">
+              V and E stay fixed at the set voltages — the conductor glow, C*, and U* grow.
+            </p>
           </ControlGroup>
 
           <ControlGroup title="Ground bar geometry">
