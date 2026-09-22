@@ -97,6 +97,10 @@ export interface SolveResult extends GridInfo {
   Cstar: number;
   /** Stored energy U* = 0.5 * C* * V0^2, arbitrary units. */
   Ustar: number;
+  /** Free surface charge proxy sigma = epsr*|E| on open cells touching a conductor, 0 elsewhere; arbitrary units. */
+  sigma: Float32Array;
+  /** Largest sigma over conductor-adjacent open cells; scales with epsr. */
+  maxSigma: number;
 }
 
 // Multigrid solver settings. Plain SOR stalls on the smooth, large-wavelength
@@ -940,6 +944,26 @@ export function solve(p: SimParams): SolveResult {
     if (mag > maxE) maxE = mag;
   }
 
+  // Free surface charge proxy: on open cells touching a conductor cell,
+  // sigma = epsr * |E| (arbitrary units, epsr-scaled boundary |E|).
+  const sigma = new Float32Array(nx * ny);
+  let maxSigma = 0;
+  for (let j = 0; j < ny; j++) {
+    for (let i = 0; i < nx; i++) {
+      const idx = i + j * nx;
+      if (mask[idx] !== 0) continue;
+      const touchesConductor =
+        (i > 0 && mask[idx - 1] !== 0) ||
+        (i < nx - 1 && mask[idx + 1] !== 0) ||
+        (j > 0 && mask[idx - nx] !== 0) ||
+        (j < ny - 1 && mask[idx + nx] !== 0);
+      if (!touchesConductor) continue;
+      const s = p.epsr * Math.hypot(Ex[idx], Ey[idx]);
+      sigma[idx] = s;
+      if (s > maxSigma) maxSigma = s;
+    }
+  }
+
   const g0 = geometryFactor(p, V, Ex, Ey);
 
   return {
@@ -959,6 +983,8 @@ export function solve(p: SimParams): SolveResult {
     g0,
     Cstar: g0 * p.epsr,
     Ustar: 0.5 * g0 * p.epsr * p.V0 * p.V0,
+    sigma,
+    maxSigma,
   };
 }
 

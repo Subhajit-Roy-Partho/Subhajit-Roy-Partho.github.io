@@ -601,6 +601,34 @@ export function ElectrostaticSimulator() {
     ctx.restore();
   }, []);
 
+  // Free-charge glow on conductor outlines: one accent marker per sigma>0
+  // cell. Normalized against the epsr-INDEPENDENT max boundary |E| (not
+  // maxSigma, which scales with epsr) so the glow visibly brightens as the
+  // dielectric constant rises: alpha = 0.12 + 0.88*epsr*|E|/(10*maxBdryE).
+  const drawChargeGlow = useCallback((ctx: CanvasRenderingContext2D, result: SolveResult) => {
+    const { nx, ny, cell, Ex, Ey, sigma } = result;
+    let maxBdryE = 0;
+    for (let k = 0; k < nx * ny; k++) {
+      if (sigma[k] <= 0) continue;
+      const e = Math.hypot(Ex[k], Ey[k]);
+      if (e > maxBdryE) maxBdryE = e;
+    }
+    if (maxBdryE <= 0) return;
+    const accent = cssVar("--accent", "#0891b2");
+    const s = cell * PX_PER_CM;
+    ctx.save();
+    ctx.fillStyle = accent;
+    for (let j = 0; j < ny; j++) {
+      for (let i = 0; i < nx; i++) {
+        const sg = sigma[i + j * nx];
+        if (sg <= 0) continue;
+        ctx.globalAlpha = clamp(0.12 + (0.88 * sg) / (10 * maxBdryE || 1), 0, 1);
+        ctx.fillRect(i * s, j * s, s, s);
+      }
+    }
+    ctx.restore();
+  }, []);
+
   const drawConductors = useCallback(
     (ctx: CanvasRenderingContext2D, p: SimParams, lw: number, lh: number) => {
       const cxp = p.cx * PX_PER_CM;
@@ -781,9 +809,10 @@ export function ElectrostaticSimulator() {
     }
 
     drawConductors(ctx, ui.params, lw, lh);
+    if (fresh && sim) drawChargeGlow(ctx, sim.result);
     if (fresh && sim && ui.toggles.heat) drawColorbar(ctx, ui.params, lw, lh);
     drawCornerNote(ctx, ui.params, lw, lh);
-  }, [drawHeatLayer, drawGrid, drawContours, drawFieldLines, drawVectors, drawConductors, drawColorbar, drawCornerNote, drawPendingNote]);
+  }, [drawHeatLayer, drawGrid, drawContours, drawFieldLines, drawVectors, drawConductors, drawChargeGlow, drawColorbar, drawCornerNote, drawPendingNote]);
 
   /* ---------------- probe overlay ---------------- */
 
