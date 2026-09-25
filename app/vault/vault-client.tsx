@@ -32,6 +32,28 @@ type ProxyResult = {
   body: string;
 };
 
+type ExactGroupUI = {
+  keepId: string;
+  keepName: string;
+  dropIds: string[];
+  names: string[];
+  preview: string;
+};
+
+type NearGroupUI = {
+  ids: string[];
+  names: string[];
+  matchedOn: string[];
+  suggestion: string;
+  preview: string;
+};
+
+type DedupeResultUI = {
+  exact: ExactGroupUI[];
+  near: NearGroupUI[];
+  deletedCount?: number;
+};
+
 async function copyText(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);
@@ -82,13 +104,17 @@ export function VaultClient() {
   const [saving, setSaving] = useState(false);
 
   // Proxy test state (one panel open at a time)
-  const [proxyId, setProxyId] = useState<string | null>(null);
-  const [pUrl, setPUrl] = useState("");
+  const [proxyId, setProxyId] = useState<string | null>(null);  const [pUrl, setPUrl] = useState("");
   const [pMethod, setPMethod] = useState("GET");
   const [pBody, setPBody] = useState("");
   const [pBusy, setPBusy] = useState(false);
   const [pResult, setPResult] = useState<ProxyResult | null>(null);
   const [pError, setPError] = useState<string | null>(null);
+
+  // On-demand duplicate scan (never runs on write — only when asked).
+  const [dedupe, setDedupe] = useState<DedupeResultUI | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [pruning, setPruning] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -250,6 +276,55 @@ export function VaultClient() {
     }
   }
 
+  async function scanDuplicates() {
+    setScanning(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/vault/dedupe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mode: "scan" }),
+      });
+      const json = (await res.json()) as DedupeResultUI & { error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Duplicate scan failed.");
+      setDedupe({ exact: json.exact ?? [], near: json.near ?? [] });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Duplicate scan failed.");
+    } finally {
+      setScanning(false);
+    }
+  }
+
+  async function pruneDuplicates() {
+    if (
+      !window.confirm(
+        "Delete exact duplicate secrets? The oldest copy of each group is kept. Near-duplicates are never auto-deleted."
+      )
+    )
+      return;
+    setPruning(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/vault/dedupe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mode: "prune" }),
+      });
+      const json = (await res.json()) as DedupeResultUI & { error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Prune failed.");
+      setDedupe({
+        exact: json.exact ?? [],
+        near: json.near ?? [],
+        deletedCount: json.deletedCount ?? 0,
+      });
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Prune failed.");
+    } finally {
+      setPruning(false);
+    }
+  }
+
   if (sessionPending || (!session?.user && loading)) {
     return (
       <div className="pt-32">
@@ -270,6 +345,87 @@ export function VaultClient() {
         />
 
         {error && <p className={`${errorClass} mt-8`}>{error}</p>}
+
+        <Card>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-semibold">Duplicates</h2>
+              <p className={noteClass}>
+                On-demand only — nothing is checked on write. Scan finds exact
+                copies and near-matches; only exact copies can be pruned, and
+                near-matches are always merged manually via Edit/Delete.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void scanDuplicates()}
+              disabled={scanning}
+              className={btnGhost}
+            >
+              {scanning ? "Scanning…" : "Find duplicates"}
+            </button>
+          </div>
+
+          {dedupe && (
+            <div className="mt-4 space-y-4">
+              {dedupe.deletedCount !== undefined && (
+                <p className={noteClass}>
+                  Pruned {dedupe.deletedCount} exact duplicate
+                  {dedupe.deletedCount === 1 ? "" : "s"} (oldest copy kept).
+                </p>
+              )}
+              {dedupe.exact.length === 0 && dedupe.near.length === 0 ? (
+                <p className={noteClass}>No duplicates found.</p>
+              ) : (
+                <>
+                  {dedupe.exact.map((g) => (
+                    <div
+                      key={g.keepId}
+                      className="rounded-xl border border-[var(--border)] p-4"
+                    >
+                      <p className="text-sm font-semibold">
+                        Exact duplicate: {g.keepName}
+                      </p>
+                      <p className="mt-1 font-mono text-xs text-[var(--muted)]">
+                        keep {g.keepId} · drop {g.dropIds.length} · preview:{" "}
+                        {g.preview}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => void pruneDuplicates()}
+                        disabled={pruning}
+                        className={`${btnDanger} mt-3`}
+                      >
+                        {pruning ? "Deleting…" : "Delete duplicates"}
+                      </button>
+                    </div>
+                  ))}
+                  {dedupe.near.map((g) => (
+                    <div
+                      key={g.ids.join("+")}
+                      className="rounded-xl border border-[var(--border)] p-4"
+                    >
+                      <p className="text-sm font-semibold">
+                        Near-duplicate: {g.names.join(", ")}
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {g.matchedOn.map((m) => (
+                          <span key={m} className="chip font-mono">
+                            {m}
+                          </span>
+                        ))}
+                      </div>
+                      <p className={`${noteClass} mt-2`}>
+                        {g.suggestion} Merge manually with Edit/Delete — these
+                        are never auto-deleted.
+                      </p>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+        </Card>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           {/* Create */}

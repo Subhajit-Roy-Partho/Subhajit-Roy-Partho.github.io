@@ -229,6 +229,12 @@ export default function ApiBankPage() {
                 {ENABLE_DB ? "Open the vault →" : "Open the vault on the main site"}
               </LiveLink>
             </p>
+            <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
+              Duplicates are handled on demand only — nothing is checked on write. The /vault page&apos;s{" "}
+              <em>Find duplicates</em> button (and <code>site-vault dedupe [--prune]</code>) scans for exact copies
+              and near-matches server-side with masked previews only: <code>prune</code> deletes exact copies keeping
+              the oldest, while near-matches are always merged manually via Edit/Delete and are never auto-deleted.
+            </p>
           </div>
         </div>
       </section>

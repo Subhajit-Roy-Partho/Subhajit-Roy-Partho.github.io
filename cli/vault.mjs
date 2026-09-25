@@ -241,6 +241,7 @@ Usage:
   site-vault push-env-file <path> [--prefix <P>] [--allowlist K1,K2 | --all]
   site-vault delete <name>
   site-vault proxy <name> --url <target> [--method <M>] [--body-json '<json>']
+  site-vault dedupe [--prune]
 
 Notes:
   - Prefer 'login --api-key-stdin' or '--api-key-env <VAR>': a key passed as
@@ -253,6 +254,9 @@ Notes:
   - proxy injects the secret server-side; the secret never touches this machine.
     Trusted-hosts warning: the server will send the secret to ANY of the
     secret's allowed hosts — only allowlist hosts you trust with the value.
+  - dedupe is on-demand only (never on write): 'dedupe' scans for exact
+    copies + near-matches (masked previews only); '--prune' deletes exact
+    copies only, keeping the oldest — near-matches are merge-manually.
 `;
 
 async function resolveLoginKey(flags) {
@@ -414,6 +418,36 @@ async function cmdProxy(positionals, flags) {
   console.log(JSON.stringify({ status: res.status, headers: res.headers, body: res.body }, null, 2));
 }
 
+async function cmdDedupe(flags) {
+  const cfg = loadConfig();
+  const prune = flags.prune !== undefined;
+  const res = await api(cfg, "/api/vault/dedupe", {
+    method: "POST",
+    body: { mode: prune ? "prune" : "scan" },
+  });
+  const exact = res.exact ?? [];
+  const near = res.near ?? [];
+  if (exact.length === 0) {
+    console.log("no exact duplicates.");
+  } else {
+    for (const g of exact) {
+      console.log(`exact: keep "${g.keepName}" (${g.keepId}) drop ${g.dropIds.length}: ${g.dropIds.join(", ")}`);
+    }
+  }
+  if (prune) {
+    console.log(`pruned ${res.deletedCount ?? 0} exact duplicate(s) (oldest kept).`);
+  }
+  if (near.length === 0) {
+    console.error("no near-duplicates.");
+    return;
+  }
+  for (const g of near) {
+    console.error(
+      `near: ${(g.names ?? []).join(", ")} matched-on [${(g.matchedOn ?? []).join(", ")}] — ${g.suggestion ?? "merge manually via site PATCH/DELETE; never auto-deleted."}`
+    );
+  }
+}
+
 // ---------------------------------------------------------------------------
 // main
 // ---------------------------------------------------------------------------
@@ -440,6 +474,8 @@ async function main() {
       return cmdDelete(positionals);
     case "proxy":
       return cmdProxy(positionals, flags);
+    case "dedupe":
+      return cmdDedupe(flags);
     default:
       usageFail(`unknown command "${cmd}"`);
   }

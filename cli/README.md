@@ -51,6 +51,10 @@ site-vault push FLAG --value dev-only   # prefer stdin/env; --value can linger i
 # delete
 site-vault delete OLD_KEY
 
+# dedupe (on-demand only — never runs on write)
+site-vault dedupe          # scan: exact groups + near-match warnings (masked previews only)
+site-vault dedupe --prune  # delete exact copies only (oldest kept); near-matches still merge-manually
+
 # proxy: secret is injected server-side, never touches this machine.
 # Trusted-hosts warning: the server will send the secret to ANY of the
 # secret's allowed hosts — only allowlist hosts you trust with the value.
