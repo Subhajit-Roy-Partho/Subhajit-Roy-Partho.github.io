@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
+import { SessionNav } from "./session-nav";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
@@ -65,7 +66,8 @@ export function Nav() {
               </Link>
             );
           })}
-          <div className="ml-2">
+          <div className="ml-2 flex items-center gap-1">
+            <SessionNav />
             <ThemeToggle />
           </div>
         </div>
@@ -96,6 +98,9 @@ export function Nav() {
                 {link.label}
               </Link>
             ))}
+            <div className="flex flex-col border-t border-[var(--border)] pt-2">
+              <SessionNav />
+            </div>
           </div>
         </div>
       )}

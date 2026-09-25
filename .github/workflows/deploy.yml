@@ -30,8 +30,14 @@ jobs:
       - name: Install dependencies 📦
         run: npm ci
 
+      - name: Strip dynamic routes (static export) 🧹
+        run: rm -rf app/api "app/(auth)" app/vault app/admin app/keys
+
       - name: Build (static export) 🏗️
         run: npm run build
+        env:
+          GITHUB_PAGES: "true"
+          NEXT_PUBLIC_ENABLE_DB: "0"
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4

@@ -21,3 +21,4 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+/.next-build.db
