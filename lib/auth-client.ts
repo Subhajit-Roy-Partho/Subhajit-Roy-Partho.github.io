@@ -9,6 +9,9 @@ import { apiKeyClient } from "@better-auth/api-key/client";
 import { useSyncExternalStore } from "react";
 
 export const authClient = createAuthClient({
+  // Intentionally no baseURL: the client uses same-origin (/api/auth on the
+  // page's own origin). A hardcoded URL or localhost fallback here is what
+  // used to send Vercel sign-ins to localhost — never add one.
   plugins: [adminClient(), apiKeyClient(), twoFactorClient()],
 });
 

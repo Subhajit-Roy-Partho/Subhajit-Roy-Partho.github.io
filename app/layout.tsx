@@ -29,7 +29,11 @@ export const metadata: Metadata = {
   },
 };
 
-const GA_ID = "G-X8WMNMXDWQ";
+const GA_FALLBACK_ID = "G-X8WMNMXDWQ";
+// Same measurement ID on both deploys: code-level default with a public env
+// override. The Pages workflow pins NEXT_PUBLIC_GA_ID to the same value, and
+// Vercel should set NEXT_PUBLIC_GA_ID identically (see .env.example).
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? GA_FALLBACK_ID;
 const GA_INIT = `
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}

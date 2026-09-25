@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { SITE_URL } from "@/lib/env";
 import { AccountHeader, Card } from "@/components/account-ui";
 
@@ -25,12 +24,14 @@ export function DbPlaceholder({
             Sign-in, the secret vault, API keys, and the admin board all run
             on the main site.
           </p>
-          <Link
+          <a
             href={`${SITE_URL}${path}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[#04121a] transition hover:brightness-110"
           >
             Open {feature} on the main site <span aria-hidden>→</span>
-          </Link>
+          </a>
         </Card>
       </section>
     </div>

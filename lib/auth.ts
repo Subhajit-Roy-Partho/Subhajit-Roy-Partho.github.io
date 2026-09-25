@@ -19,12 +19,53 @@ function required(name: string, fallbackBuildOnly?: string): string {
   throw new Error(`Missing ${name}. See .env.example (Vercel-only vars).`);
 }
 
+// Stable production origin. Orchestrator sets BETTER_AUTH_URL to this alias
+// on Vercel; it is also the default the static mirror links back to.
+const LIVE_ORIGIN =
+  "https://subhajit-roy-partho-github-io-subhajit-roys-projects.vercel.app";
+
+function isBuildPhase(): boolean {
+  return process.env.NEXT_PHASE === "phase-production-build";
+}
+
+// Same-origin by default (undefined lets better-auth derive the origin from
+// the request). Never silently fall back to localhost in production — a
+// localhost baseURL would make every sign-in redirect/callback point at the
+// developer's machine on the live site. Fail loud instead.
+function resolveBaseURL(): string | undefined {
+  const url =
+    process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_SITE_URL;
+  if (
+    url &&
+    process.env.NODE_ENV === "production" &&
+    !isBuildPhase() &&
+    /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?([/?#]|$)/i.test(url)
+  ) {
+    throw new Error(
+      `Refusing localhost baseURL in production: ${url}. Set BETTER_AUTH_URL to ${LIVE_ORIGIN}.`
+    );
+  }
+  return url;
+}
+
+function resolveTrustedOrigins(): string[] {
+  const origins = new Set<string>([LIVE_ORIGIN]);
+  if (process.env.VERCEL_URL) origins.add(`https://${process.env.VERCEL_URL}`);
+  const envUrl = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_SITE_URL;
+  if (envUrl && !/localhost|127\.0\.0\.1/i.test(envUrl)) origins.add(envUrl);
+  return [...origins];
+}
+
 export const auth = betterAuth({
   secret: required(
     "BETTER_AUTH_SECRET",
     "build-time-placeholder-secret-min-32-chars!!"
   ),
-  baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_SITE_URL,
+  baseURL: resolveBaseURL(),
+  // The stable Vercel alias is always trusted (BETTER_AUTH_URL is set to it
+  // on Vercel). VERCEL_URL covers preview deployments; an explicitly set
+  // BETTER_AUTH_URL is trusted too when it differs from the alias.
+  trustedOrigins: resolveTrustedOrigins(),
   database: drizzleAdapter(db, { provider: "sqlite" }),
   emailAndPassword: {
     enabled: true,
