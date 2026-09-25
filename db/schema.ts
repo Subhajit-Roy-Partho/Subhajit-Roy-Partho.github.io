@@ -29,6 +29,10 @@ export const user = sqliteTable("user", {
   banned: integer("banned", { mode: "boolean" }).default(false),
   banReason: text("ban_reason"),
   banExpires: integer("ban_expires", { mode: "timestamp" }),
+  // better-auth two-factor plugin field
+  twoFactorEnabled: integer("two_factor_enabled", { mode: "boolean" }).default(
+    false
+  ),
 });
 
 export const session = sqliteTable("session", {
@@ -105,6 +109,19 @@ export const apikey = sqliteTable("apikey", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).defaultNow().notNull(),
   permissions: text("permissions"),
   metadata: text("metadata"),
+});
+
+// --- better-auth two-factor plugin table (TOTP secrets + backup codes;
+// plugin-owned encryption — never read these columns directly) ---
+
+export const twoFactor = sqliteTable("two_factor", {
+  id: text("id").primaryKey(),
+  secret: text("secret").notNull(),
+  backupCodes: text("backup_codes").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  verified: integer("verified", { mode: "boolean" }).default(true),
 });
 
 // --- app tables ---

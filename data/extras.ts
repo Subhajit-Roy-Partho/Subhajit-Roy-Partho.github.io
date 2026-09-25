@@ -29,6 +29,16 @@ export const extras: Extra[] = [
     liveLink: { label: "Open the simulator", href: "/extras/electrostatic-simulator" },
   },
   {
+    id: "apibank",
+    name: "API Bank",
+    tagline: "Self-hosted secret vault with proxy + CLI",
+    description:
+      "Per-user encrypted vault with masked previews and reveal-on-demand, Bearer API keys, a host-allowlisted proxy so third-party keys never touch client machines, a zero-dependency site-vault CLI, and an admin board — behind better-auth sign-in with free TOTP two-factor.",
+    tags: ["Next.js", "better-auth", "Turso", "CLI"],
+    status: "Docs · live",
+    href: "/extras/apibank",
+  },
+  {
     id: "khagna",
     name: "Khagna",
     tagline: "Best price & best card",

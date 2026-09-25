@@ -3,26 +3,25 @@ import { randomUUID } from "node:crypto";
 
 import { db } from "@/db";
 import { vaultSecrets } from "@/db/schema";
+import { parseAllowedHosts } from "@/lib/server/allowed-hosts";
 import { resolveUserId, unauthorized } from "@/lib/server/api-auth";
+import { BodyTooLargeError, readJsonLimited } from "@/lib/server/body-limit";
+import { rateLimited } from "@/lib/server/rate-limit";
 import { encryptSecret, maskPreview } from "@/lib/server/vault-crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function parseAllowedHosts(raw: unknown): string[] | null {
-  if (raw == null) return null;
-  if (!Array.isArray(raw)) throw new Error("allowedHosts must be an array");
-  if (raw.length > 10) throw new Error("allowedHosts max 10 entries");
-  return raw.map((h) => {
-    if (typeof h !== "string" || !h) throw new Error("allowedHosts entries must be non-empty strings");
-    return h.trim().toLowerCase();
-  });
-}
+// Vault writes are small (value cap 16KB): 32KB covers name/value/hosts
+// envelope with headroom while bounding parse memory (M2).
+const WRITE_BODY_MAX = 32_768;
 
 // GET /api/vault — list caller's secrets (metadata + masked preview only).
 export async function GET(req: Request) {
   const userId = await resolveUserId(req);
   if (!userId) return unauthorized();
+  const limited = rateLimited(req, "vault");
+  if (limited) return limited;
   const rows = await db
     .select()
     .from(vaultSecrets)
@@ -45,10 +44,15 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const userId = await resolveUserId(req);
   if (!userId) return unauthorized();
+  const limited = rateLimited(req, "vault");
+  if (limited) return limited;
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
-  } catch {
+    body = await readJsonLimited(req, WRITE_BODY_MAX);
+  } catch (e) {
+    if (e instanceof BodyTooLargeError) {
+      return Response.json({ error: e.message }, { status: 413 });
+    }
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
   const { name, value, allowedHosts, injectAs } = body as {

@@ -2,7 +2,10 @@ import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { vaultSecrets } from "@/db/schema";
+import { parseAllowedHosts } from "@/lib/server/allowed-hosts";
 import { resolveUserId, unauthorized } from "@/lib/server/api-auth";
+import { BodyTooLargeError, readJsonLimited } from "@/lib/server/body-limit";
+import { rateLimited } from "@/lib/server/rate-limit";
 import {
   decryptSecret,
   encryptSecret,
@@ -11,6 +14,8 @@ import {
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const WRITE_BODY_MAX = 32_768;
 
 async function owned(id: string, userId: string) {
   const rows = await db
@@ -41,12 +46,20 @@ export async function GET(
 ) {
   const userId = await resolveUserId(req);
   if (!userId) return unauthorized();
+  const limited = rateLimited(req, "vault");
+  if (limited) return limited;
   const { id } = await params;
   const row = await owned(id, userId);
   if (!row) return Response.json({ error: "not found" }, { status: 404 });
   const url = new URL(req.url);
   if (url.searchParams.get("reveal") === "1") {
-    return Response.json({ ...meta(row), value: decryptSecret(row.ciphertext) });
+    // M5: a corrupt envelope or rotated/missing key must be a clean 500,
+    // never an unhandled throw.
+    try {
+      return Response.json({ ...meta(row), value: decryptSecret(row.ciphertext) });
+    } catch {
+      return Response.json({ error: "decrypt failed" }, { status: 500 });
+    }
   }
   return Response.json(meta(row));
 }
@@ -58,14 +71,19 @@ export async function PATCH(
 ) {
   const userId = await resolveUserId(req);
   if (!userId) return unauthorized();
+  const limited = rateLimited(req, "vault");
+  if (limited) return limited;
   const { id } = await params;
   const row = await owned(id, userId);
   if (!row) return Response.json({ error: "not found" }, { status: 404 });
 
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
-  } catch {
+    body = await readJsonLimited(req, WRITE_BODY_MAX);
+  } catch (e) {
+    if (e instanceof BodyTooLargeError) {
+      return Response.json({ error: e.message }, { status: 413 });
+    }
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
   const patch: Partial<typeof vaultSecrets.$inferInsert> = {};
@@ -88,14 +106,17 @@ export async function PATCH(
     patch.keyVersion = enc.keyVersion;
   }
   if (body.allowedHosts !== undefined) {
-    const raw = body.allowedHosts;
-    if (raw !== null && !Array.isArray(raw)) {
-      return Response.json({ error: "allowedHosts must be array or null" }, { status: 400 });
+    // M1: same normalization as POST (trim + lowercase) so the proxy's
+    // exact-match can't be bypassed by cosmetic variants. null disables.
+    try {
+      const hosts = parseAllowedHosts(body.allowedHosts);
+      patch.allowedHostsJson = hosts ? JSON.stringify(hosts) : null;
+    } catch (e) {
+      return Response.json(
+        { error: e instanceof Error ? e.message : "bad allowedHosts" },
+        { status: 400 }
+      );
     }
-    if (Array.isArray(raw) && raw.length > 10) {
-      return Response.json({ error: "allowedHosts max 10 entries" }, { status: 400 });
-    }
-    patch.allowedHostsJson = raw === null ? null : JSON.stringify(raw);
   }
   if (body.injectAs !== undefined) {
     patch.injectAs = body.injectAs === "body" ? "body" : "header";
@@ -122,6 +143,8 @@ export async function DELETE(
 ) {
   const userId = await resolveUserId(req);
   if (!userId) return unauthorized();
+  const limited = rateLimited(req, "vault");
+  if (limited) return limited;
   const { id } = await params;
   const row = await owned(id, userId);
   if (!row) return Response.json({ error: "not found" }, { status: 404 });

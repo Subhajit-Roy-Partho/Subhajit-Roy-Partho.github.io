@@ -310,6 +310,11 @@ export function VaultClient() {
                   onChange={(e) => setCHosts(e.target.value)}
                   placeholder="api.stripe.com, api.github.com"
                 />
+                <p className={`${noteClass} mt-2`}>
+                  Only allowlist hosts you trust with this secret&apos;s value —
+                  anyone able to call the proxy can make the server send the
+                  secret to any host listed here.
+                </p>
               </div>
               <div>
                 <label className={labelClass} htmlFor="vault-inject">Inject as</label>
@@ -456,6 +461,13 @@ export function VaultClient() {
                     {proxyId === s.id ? (
                       <form onSubmit={proxyTest} className="space-y-3">
                         <p className={labelClass}>Proxy test — secret is injected server-side, never shown</p>
+                        <p className={noteClass}>
+                          Trusted-hosts warning: the proxy will send this secret
+                          to any of its allowed hosts. Only test URLs on hosts
+                          you trust with the value; targets must be public
+                          https hosts (private/loopback/reserved ranges are
+                          rejected).
+                        </p>
                         <div className="grid gap-3 sm:grid-cols-[1fr_8rem]">
                           <input
                             className={`${fieldClass} font-mono`}

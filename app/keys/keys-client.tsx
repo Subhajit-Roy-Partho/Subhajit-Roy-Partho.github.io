@@ -179,6 +179,12 @@ export function KeysClient() {
               <button type="submit" disabled={creating} className={btnPrimary}>
                 {creating ? "Creating…" : "Create key"}
               </button>
+              <p className={`${noteClass} mt-2`}>
+                Minting needs a signed-in browser session — API keys
+                can&apos;t create or delete keys. Keys skip the two-factor
+                challenge when used, so treat them like passwords; new keys
+                expire after 90 days.
+              </p>
             </form>
 
             {freshRaw && (

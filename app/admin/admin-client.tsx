@@ -63,9 +63,12 @@ export function AdminClient() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const myRole = (session?.user as { role?: string } | undefined)?.role;
+  const myId = (session?.user as { id?: string } | undefined)?.id;
+  const adminCount = users.filter((u) => u.role === "admin").length;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -107,11 +110,58 @@ export function AdminClient() {
     }
   }
 
-  const setRole = (id: string, role: "admin" | "user") =>
-    run(`${id}-role`, () => authClient.admin.setRole({ userId: id, role }));
+  const setRole = (id: string, role: "admin" | "user") => {
+    // L1: never demote yourself, and never demote the last admin — both
+    // would leave the deployment unadministrable (or lock you out mid-click).
+    if (id === myId && role !== "admin") {
+      setError("You can't demote your own account.");
+      return;
+    }
+    if (role !== "admin" && adminCount <= 1) {
+      setError("Refusing: that's the last admin account.");
+      return;
+    }
+    void run(`${id}-role`, () => authClient.admin.setRole({ userId: id, role }));
+  };
 
-  const ban = (id: string) =>
-    run(`${id}-ban`, () => authClient.admin.banUser({ userId: id }));
+  // H4: a ban must also kill the account's Bearer keys — banning alone
+  // leaves rows in the plugin-owned apikey table. The server additionally
+  // rejects banned users in api-auth, but revoke here for hygiene.
+  const ban = async (id: string, email: string) => {
+    if (id === myId) {
+      setError("You can't ban your own account.");
+      return;
+    }
+    setBusyId(`${id}-ban`);
+    setError(null);
+    setNotice(null);
+    try {
+      const res = await authClient.admin.banUser({ userId: id });
+      const msg = messageOf(res);
+      if (msg) throw new Error(msg);
+      let revoked: number | null = null;
+      try {
+        const rk = await fetch(
+          `/api/admin/users/${encodeURIComponent(id)}/keys`,
+          { method: "DELETE" }
+        );
+        const kj = (await rk.json()) as { revoked?: unknown };
+        if (rk.ok && typeof kj.revoked === "number") revoked = kj.revoked;
+      } catch {
+        // ban already landed; surface revocation as best-effort below
+      }
+      setNotice(
+        revoked === null
+          ? `Banned ${email}. Key revocation status unknown — check their keys.`
+          : `Banned ${email}; revoked ${revoked} API key(s).`
+      );
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Request failed.");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const unban = (id: string) =>
     run(`${id}-ban`, () => authClient.admin.unbanUser({ userId: id }));
@@ -155,6 +205,7 @@ export function AdminClient() {
         />
 
         {error && <p className={`${errorClass} mt-8`}>{error}</p>}
+        {notice && <p className={`${noteClass} mt-8`}>{notice}</p>}
 
         <div className="mt-10 space-y-4">
           {loading ? (
@@ -166,6 +217,9 @@ export function AdminClient() {
           ) : (
             users.map((u) => {
               const busy = busyId?.startsWith(u.id) ?? false;
+              const isSelf = myId !== undefined && u.id === myId;
+              const soleAdmin = u.role === "admin" && adminCount <= 1;
+              const demoteBlocked = isSelf || soleAdmin;
               return (
                 <Card key={u.id}>
                   <div className="flex flex-wrap items-start justify-between gap-4">
@@ -192,7 +246,14 @@ export function AdminClient() {
                       {u.role === "admin" ? (
                         <button
                           type="button"
-                          disabled={busy}
+                          disabled={busy || demoteBlocked}
+                          title={
+                            isSelf
+                              ? "You can't demote your own account"
+                              : soleAdmin
+                                ? "Can't demote the last admin"
+                                : undefined
+                          }
                           onClick={() => setRole(u.id, "user")}
                           className={btnGhost}
                         >
@@ -220,10 +281,11 @@ export function AdminClient() {
                       ) : (
                         <button
                           type="button"
-                          disabled={busy}
+                          disabled={busy || isSelf}
+                          title={isSelf ? "You can't ban your own account" : undefined}
                           onClick={() => {
                             if (window.confirm(`Ban ${u.email}? They will be signed out immediately.`)) {
-                              void ban(u.id);
+                              void ban(u.id, u.email);
                             }
                           }}
                           className={btnDanger}

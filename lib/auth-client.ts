@@ -1,15 +1,15 @@
 "use client";
 
 // Designer hook: typed client for vault/admin UI (designer owns the pages).
-// Plugins mirror the server: admin + apiKey clients.
+// Plugins mirror the server: admin + apiKey + twoFactor clients.
 
 import { createAuthClient } from "better-auth/client";
-import { adminClient } from "better-auth/client/plugins";
+import { adminClient, twoFactorClient } from "better-auth/client/plugins";
 import { apiKeyClient } from "@better-auth/api-key/client";
 import { useSyncExternalStore } from "react";
 
 export const authClient = createAuthClient({
-  plugins: [adminClient(), apiKeyClient()],
+  plugins: [adminClient(), apiKeyClient(), twoFactorClient()],
 });
 
 export type AuthClient = typeof authClient;

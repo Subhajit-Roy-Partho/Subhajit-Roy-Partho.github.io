@@ -2,6 +2,9 @@
   "name": "subhajit-roy-partho-github-io",
   "version": "1.0.0",
   "private": true,
+  "bin": {
+    "site-vault": "cli/vault.mjs"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
