@@ -21,7 +21,9 @@ function required(name: string, fallbackBuildOnly?: string): string {
 
 // Stable production origin. Orchestrator sets BETTER_AUTH_URL to this alias
 // on Vercel; it is also the default the static mirror links back to.
-const LIVE_ORIGIN =
+const LIVE_ORIGIN = "https://subhajit-roy.vercel.app";
+// Previous alias, kept trusted so old links/callbacks don't break.
+const LEGACY_ORIGIN =
   "https://subhajit-roy-partho-github-io-subhajit-roys-projects.vercel.app";
 
 function isBuildPhase(): boolean {
@@ -49,7 +51,7 @@ function resolveBaseURL(): string | undefined {
 }
 
 function resolveTrustedOrigins(): string[] {
-  const origins = new Set<string>([LIVE_ORIGIN]);
+  const origins = new Set<string>([LIVE_ORIGIN, LEGACY_ORIGIN]);
   if (process.env.VERCEL_URL) origins.add(`https://${process.env.VERCEL_URL}`);
   const envUrl = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_SITE_URL;
   if (envUrl && !/localhost|127\.0\.0\.1/i.test(envUrl)) origins.add(envUrl);

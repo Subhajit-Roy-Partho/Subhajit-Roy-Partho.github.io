@@ -10,7 +10,7 @@ export const ENABLE_DB = process.env.NEXT_PUBLIC_ENABLE_DB === "1";
 // Vercel preview builds and the Pages export. Local dev sets
 // NEXT_PUBLIC_SITE_URL=http://localhost:3000 in .env.local instead.
 export const LIVE_SITE_URL =
-  "https://subhajit-roy-partho-github-io-subhajit-roys-projects.vercel.app";
+  "https://subhajit-roy.vercel.app";
 
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ??
