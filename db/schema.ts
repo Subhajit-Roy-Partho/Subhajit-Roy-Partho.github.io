@@ -85,13 +85,13 @@ export const verification = sqliteTable("verification", {
 
 export const apikey = sqliteTable("apikey", {
   id: text("id").primaryKey(),
+  configId: text("config_id"),
   name: text("name"),
   start: text("start"),
   prefix: text("prefix"),
   key: text("key").notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
+  referenceId: text("reference_id"),
   refillInterval: integer("refill_interval"),
   refillAmount: integer("refill_amount"),
   lastRefillAt: integer("last_refill_at", { mode: "timestamp" }),
@@ -122,6 +122,8 @@ export const twoFactor = sqliteTable("two_factor", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   verified: integer("verified", { mode: "boolean" }).default(true),
+  failedVerificationCount: integer("failed_verification_count").default(0),
+  lockedUntil: integer("locked_until", { mode: "timestamp" }),
 });
 
 // --- app tables ---

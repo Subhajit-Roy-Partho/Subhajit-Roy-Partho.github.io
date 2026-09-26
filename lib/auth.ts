@@ -68,6 +68,10 @@ export const auth = betterAuth({
   // on Vercel). VERCEL_URL covers preview deployments; an explicitly set
   // BETTER_AUTH_URL is trusted too when it differs from the alias.
   trustedOrigins: resolveTrustedOrigins(),
+  // next.config.ts sets trailingSlash:true for the Pages export; Vercel
+  // 308-redirects /api/auth/* to trailing-slash URLs, which better-auth's
+  // router 404s unless this is set.
+  advanced: { skipTrailingSlashes: true },
   database: drizzleAdapter(db, { provider: "sqlite" }),
   emailAndPassword: {
     enabled: true,
