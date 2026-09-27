@@ -34,7 +34,8 @@ jobs:
         run: bash scripts/check-server-boundary.sh
 
       - name: Strip dynamic routes (static export) 🧹
-        run: rm -rf app/api "app/(auth)" app/vault app/admin app/keys
+        # middleware.ts is incompatible with output:"export" — strip it too.
+        run: rm -rf app/api "app/(auth)" app/vault app/admin app/keys middleware.ts
 
       - name: Build (static export) 🏗️
         run: npm run build

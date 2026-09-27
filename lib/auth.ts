@@ -71,7 +71,26 @@ export const auth = betterAuth({
   // next.config.ts sets trailingSlash:true for the Pages export; Vercel
   // 308-redirects /api/auth/* to trailing-slash URLs, which better-auth's
   // router 404s unless this is set.
-  advanced: { skipTrailingSlashes: true },
+  advanced: {
+    skipTrailingSlashes: true,
+    // Pinned session-cookie posture (matches the plugin-enforced defaults —
+    // explicit so a better-auth upgrade can't silently widen it): host-only
+    // (no Domain attribute), root path, lax CSRF posture; httpOnly always,
+    // Secure + __Secure- prefix whenever the baseURL is https (i.e. all of
+    // production). Host-only is why the legacy alias and the canonical host
+    // must NOT both serve signed-in traffic: a cookie set on one is
+    // invisible on the other, which reads as "session dropped on
+    // navigation". Keep both hosts trusted (old links/callbacks) but
+    // canonicalize traffic to LIVE_ORIGIN (redirect), never the reverse.
+    defaultCookieAttributes: { sameSite: "lax", path: "/" },
+  },
+  // 7-day sliding browser sessions: expire after a week idle, refresh the
+  // expiry at most once a day while active. No "remember me forever"
+  // tokens — the sign-in UI offers no persistent-session switch.
+  session: {
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
+  },
   database: drizzleAdapter(db, { provider: "sqlite" }),
   emailAndPassword: {
     enabled: true,

@@ -38,8 +38,6 @@ async function isActiveUser(userId: string): Promise<boolean> {
 // Resolve the caller to a user id via session cookie OR Bearer API key.
 // Returns null when unauthenticated — including when the account is banned
 // or ban-expired-pending (H4: the Bearer path must not bypass bans).
-// TODO: reconcile with @better-auth/api-key verify docs if method names
-// drift; the `as any` casts keep tsc/build green across plugin versions.
 export async function resolveUserId(req: Request): Promise<string | null> {
   let uid: string | null = null;
 
@@ -65,12 +63,26 @@ export async function resolveUserId(req: Request): Promise<string | null> {
         const res = (await api.verifyApiKey({
           body: { key: token },
         } as never)) as unknown as {
-          key?: { userId?: unknown };
+          valid?: unknown;
+          key?: { userId?: unknown; referenceId?: unknown } | null;
           user?: { id?: unknown };
           userId?: unknown;
         } | null;
-        const found = res?.key?.userId ?? res?.user?.id ?? res?.userId;
-        if (typeof found === "string" && found) uid = found;
+        // Owner shape: @better-auth/api-key stores the key owner in
+        // `key.referenceId` — `key.userId` is NULL for keys minted through
+        // createApiKey (the plugin's own bearer middleware resolves the
+        // user via findUserById(apiKey.referenceId)). Reading userId only
+        // rejected every valid Bearer key with 401. userId stays as a
+        // legacy fallback; an org-id referenceId finds no user row below
+        // and still fails closed via the ban/active check (H4).
+        const k = res?.key;
+        const found =
+          (typeof k?.referenceId === "string" && k.referenceId) ||
+          (typeof k?.userId === "string" && k.userId) ||
+          (typeof res?.user?.id === "string" && res.user.id) ||
+          (typeof res?.userId === "string" && res.userId) ||
+          null;
+        if (found) uid = found;
       } else if (typeof api.getSession === "function") {
         // Fallback: getSession with explicit bearer header.
         const session = (await api.getSession({
@@ -81,6 +93,10 @@ export async function resolveUserId(req: Request): Promise<string | null> {
         }
       }
     } catch {
+      // Fail closed. Note: verifyApiKey itself fails closed (valid:false)
+      // when the apikey table is missing the plugin's rate-limit/quota
+      // columns (claimUsage's guarded writes throw), so db/migrations must
+      // stay applied on Turso — an unapplied migration rejects every key.
       return null;
     }
     if (!uid) return null;
