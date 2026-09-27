@@ -216,7 +216,7 @@ export default function ApiBankPage() {
             <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-[var(--muted)]">
               <li>
                 <strong className="text-[var(--foreground)]">Masked list</strong> — every row shows a preview, never
-                the value.
+                the value; filter it client-side by name, description, or host.
               </li>
               <li>
                 <strong className="text-[var(--foreground)]">Reveal on demand</strong> — one click fetches the

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient, useSession } from "@/lib/auth-client";
 import {
@@ -121,6 +121,20 @@ export function VaultClient() {
   const [dedupe, setDedupe] = useState<DedupeResultUI | null>(null);
   const [scanning, setScanning] = useState(false);
   const [pruning, setPruning] = useState(false);
+
+  // Client-side search over already-listed metadata only (name, description,
+  // allowedHosts). No server round-trip, no secret values involved.
+  const [query, setQuery] = useState("");
+  const filtered = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return secrets;
+    return secrets.filter(
+      (s) =>
+        s.name.toLowerCase().includes(needle) ||
+        (s.description ?? "").toLowerCase().includes(needle) ||
+        (s.allowedHosts ?? []).some((h) => h.toLowerCase().includes(needle))
+    );
+  }, [secrets, query]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -525,6 +539,33 @@ export function VaultClient() {
 
           {/* List */}
           <div className="space-y-4">
+            {secrets.length > 0 && (
+              <div>
+                <label className={labelClass} htmlFor="vault-search">
+                  Search secrets
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="vault-search"
+                    className={fieldClass}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Filter by name, description, or host…"
+                  />
+                  {query && (
+                    <button type="button" onClick={() => setQuery("")} className={btnGhost}>
+                      Clear
+                    </button>
+                  )}
+                </div>
+                {query.trim() && (
+                  <p className={`${noteClass} mt-2`}>
+                    Showing {filtered.length} of {secrets.length} secret
+                    {secrets.length === 1 ? "" : "s"}.
+                  </p>
+                )}
+              </div>
+            )}
             {loading ? (
               <p className={noteClass}>Loading secrets…</p>
             ) : secrets.length === 0 ? (
@@ -533,8 +574,14 @@ export function VaultClient() {
                   No secrets yet. Store your first one — it will appear here with a masked preview.
                 </p>
               </Card>
+            ) : filtered.length === 0 ? (
+              <Card>
+                <p className={noteClass}>
+                  No secrets match &ldquo;{query.trim()}&rdquo;. Clear the search to see all {secrets.length}.
+                </p>
+              </Card>
             ) : (
-              secrets.map((s) => (
+              filtered.map((s) => (
                 <Card key={s.id}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>

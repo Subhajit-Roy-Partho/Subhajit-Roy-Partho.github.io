@@ -247,7 +247,7 @@ const HELP = `site-vault — PC CLI for the per-user vault
 
 Usage:
   site-vault login --url <site> (--api-key <key> | --api-key-stdin | --api-key-env <VAR>)
-  site-vault list
+  site-vault list [--search <text>]
   site-vault get <name> [--reveal]
   site-vault push <name> (--value <v> | --value-stdin | --env-key <KEY>)
                         [--hosts h1,h2] [--inject header|body] [--description "..."]
@@ -279,6 +279,8 @@ Notes:
     on stdout, nothing else on stdout). Everywhere else only the server's
     masked preview is shown.
   - push upserts: creates, or updates the value (409 -> PATCH) if <name> exists.
+  - list --search <text> filters the already-listed metadata (name, description,
+    allowedHosts; case-insensitive substring). Dedupe output is unaffected.
   - push-env-file never prints values; it reports names + created/updated counts.
   - proxy injects the secret server-side; the secret never touches this machine.
     Trusted-hosts warning: the server will send the secret to ANY of the
@@ -326,12 +328,25 @@ async function cmdLogin(flags) {
   console.log(`logged in to ${clean} (config ${CONFIG_PATH}, mode 600)`);
 }
 
-async function cmdList() {
+async function cmdList(flags = {}) {
   const cfg = loadConfig();
   const data = await api(cfg, "/api/vault");
-  const secrets = data.secrets ?? [];
+  let secrets = data.secrets ?? [];
+  if (flags.search !== undefined) {
+    if (typeof flags.search === "boolean") usageFail("list --search needs a value");
+    const needle = String(flags.search).toLowerCase();
+    // Client-side filter over already-listed metadata only (never secret values).
+    secrets = secrets.filter(
+      (s) =>
+        String(s.name ?? "").toLowerCase().includes(needle) ||
+        String(s.description ?? "").toLowerCase().includes(needle) ||
+        (Array.isArray(s.allowedHosts) ? s.allowedHosts : []).some((h) =>
+          String(h).toLowerCase().includes(needle)
+        )
+    );
+  }
   if (secrets.length === 0) {
-    console.log("no secrets.");
+    console.log(flags.search !== undefined ? "no secrets match." : "no secrets.");
     return;
   }
   for (const s of secrets) {
@@ -683,7 +698,7 @@ async function main() {
     case "login":
       return cmdLogin(flags);
     case "list":
-      return cmdList();
+      return cmdList(flags);
     case "get":
       return cmdGet(positionals, flags);
     case "push":
