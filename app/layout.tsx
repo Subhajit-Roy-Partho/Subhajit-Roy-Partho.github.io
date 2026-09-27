@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { ScrollProgress } from "@/components/scroll-progress";
 import { profile } from "@/data/site";
 
-const sans = Inter({ variable: "--font-sans", subsets: ["latin"] });
-const display = Space_Grotesk({ variable: "--font-display", subsets: ["latin"], weight: ["500", "600", "700"] });
-const mono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["400", "500"] });
+// display:"swap" keeps text visible in the fallback font while the webfont
+// loads (no invisible-text flash); next/font self-hosts, so no Google Fonts
+// preconnect is needed — only the analytics origins below are third-party.
+const sans = Inter({ variable: "--font-sans", subsets: ["latin"], display: "swap" });
+const display = Space_Grotesk({ variable: "--font-display", subsets: ["latin"], weight: ["500", "600", "700"], display: "swap" });
+const mono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["400", "500"], display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(profile.links.portfolio),
@@ -90,11 +94,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${sans.variable} ${display.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
-        <script
-          async
+        {/* Warm up the analytics origins early without blocking first paint. */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        <Script id="ga-init" strategy="lazyOnload" dangerouslySetInnerHTML={{ __html: GA_INIT }} />
+        <Script
+          strategy="lazyOnload"
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
         />
-        <script dangerouslySetInnerHTML={{ __html: GA_INIT }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: SEO_JSONLD }} />
         <script dangerouslySetInnerHTML={{ __html: SW_REGISTER }} />
       </head>

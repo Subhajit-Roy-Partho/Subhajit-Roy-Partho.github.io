@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   ...(isGitHubPages ? { output: "export" as const } : {}),
   images: { unoptimized: true },
   trailingSlash: true,
+  // Tree-shake the framer-motion barrel import down to the modules each route
+  // actually uses — smaller shared chunk, no visual or API change.
+  experimental: {
+    optimizePackageImports: ["framer-motion"],
+  },
 };
 
 export default nextConfig;

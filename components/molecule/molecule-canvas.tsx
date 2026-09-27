@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-const MoleculeScene = dynamic(() => import("./molecule-scene"), { ssr: false });
+const MoleculeScene = dynamic(() => import("./molecule-scene"), {
+  ssr: false,
+  // Fixed-size placeholder matching the h-48 w-48 frame the canvas renders
+  // into — reserves the exact space so CLS stays at 0 while three.js loads.
+  loading: () => (
+    <div aria-hidden className="h-full w-full animate-pulse rounded-full bg-[var(--accent-soft)]/50" />
+  ),
+});
 
 // Rendered only above the `sm` breakpoint — skip mounting the WebGL canvas at all on
 // phones rather than just hiding it with CSS, so mobile doesn't pay for a GPU context

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Reveal } from "@/components/reveal";
 import { SectionHeading } from "@/components/section-heading";
-import { ElectrostaticSimulator } from "./electrostatic-simulator";
+import { SimulatorLoader } from "./simulator-loader";
 
 export const metadata: Metadata = { title: "Electrostatic Field Simulator" };
 
@@ -39,7 +39,7 @@ export default function ElectrostaticSimulatorPage() {
 
       <section className="container-page section pt-0">
         <Reveal>
-          <ElectrostaticSimulator />
+          <SimulatorLoader />
         </Reveal>
       </section>
 

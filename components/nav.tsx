@@ -1,11 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
-import { SessionNav } from "./session-nav";
 import { cn } from "@/lib/utils";
+
+// The session widget (better-auth client, ~40K) is not needed for first
+// paint — defer it past hydration. The skeleton renders the same "Sign in"
+// pill box with transparent text, so the nav never shifts when the real
+// widget arrives (CLS-safe in both desktop and mobile placements).
+const SessionNav = dynamic(() => import("./session-nav").then((m) => m.SessionNav), {
+  ssr: false,
+  loading: () => (
+    <span
+      aria-hidden
+      className="animate-pulse rounded-full bg-[var(--accent-soft)] px-3.5 py-1.5 text-sm text-transparent"
+    >
+      Sign in
+    </span>
+  ),
+});
 
 const LINKS = [
   { href: "/about", label: "About" },
