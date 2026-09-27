@@ -32,6 +32,27 @@ site-vault login --url https://example.com --api-key-env SITE_VAULT_KEY
 site-vault login --url https://example.com --api-key <key>
 ```
 
+## Minting a key from the CLI
+
+`mint` signs in with email+password (session cookie kept in memory only),
+then creates the key — the only CLI path that can mint, because the server
+requires a signed-in session and Bearer keys can't mint keys by design
+(no privilege-escalation loop). The password comes from stdin only
+(never an argv flag, never stored); the raw key prints ONCE to stdout.
+Nothing is written to the config unless you pass `--save`.
+
+```sh
+# password via stdin; --url falls back to the saved login's site if omitted
+printf '%s' "$VAULT_PW" | site-vault mint --url https://example.com --email you@example.com --name laptop-script --days 90
+# two-factor accounts: add the six-digit authenticator code
+printf '%s' "$VAULT_PW" | site-vault mint --email you@example.com --otp 123456
+# store the fresh key as this machine's login (otherwise: save the printed key yourself)
+printf '%s' "$VAULT_PW" | site-vault mint --email you@example.com --save
+```
+
+Without `--otp` on a 2FA account, `mint` exits `2` and tells you to re-run
+with `--otp`. `--days` clamps to 1–365 (server default 90 when omitted).
+
 ## Usage
 
 Secrets are never printed — `list`/`get` show the server's masked preview

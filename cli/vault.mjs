@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 // site-vault — PC CLI for the per-user vault API.
 //
-//   login | list | get | push | push-env-file | delete | proxy
+//   login | list | get | push | push-env-file | delete | proxy | mint
 //
-// Auth: Bearer API key (created on the site's /keys page). Session cookies
-// are a browser concern; this CLI only speaks Bearer.
+// Auth: Bearer API key (created on the site's /keys page, or minted via
+// `site-vault mint`). Session cookies are a browser concern EXCEPT for
+// `mint`, which signs in with email+password to capture a session cookie
+// in memory, then POSTs /api/keys with it. Bearer keys can never mint
+// keys (server requires a signed-in session), by design.
 // Secrets are NEVER logged: list/get print the server's masked preview only.
-// The sole exception is `get <name> --reveal`, which prints the raw value to
-// stdout (pipe-friendly) and nothing else.
+// The exceptions are `get <name> --reveal` and `mint`, which print the raw
+// value/key to stdout (pipe-friendly) and nothing else on stdout.
 //
 // Config: ~/.config/site-vault/config.json  { url, apiKey }  (mode 600)
 // Runtime: node >= 18 (global fetch). No npm dependencies.
@@ -253,13 +256,28 @@ Usage:
   site-vault delete <name>
   site-vault proxy <name> --url <target> [--method <M>] [--body-json '<json>']
   site-vault dedupe [--prune]
+  site-vault mint --email <addr> [--url <site>] [--password-stdin] [--otp <code>]
+                 [--name <key-name>] [--days <1-365>] [--save]
 
 Notes:
+  - Minting needs a signed-in session, not a Bearer key: 'mint' signs in
+    with email+password (password via stdin only, never an arg, never
+    stored — memory only), then POSTs /api/keys with the session cookie.
+    Bearer keys can't mint keys, by design (no privilege-escalation loop).
+    --url defaults to the saved login's site when omitted. The raw key is
+    printed ONCE to stdout — save it now; it is never shown again. Only
+    --save writes it to the config file.
+  - Passwords/keys are never logged. Trailing-slash API URLs are used
+    directly (the site sets trailingSlash:true, so slashless auth URLs
+    308-redirect); fetch still follows redirects if one appears.
+  - Two-factor: if sign-in answers with a 2FA challenge, re-run with the
+    six-digit authenticator code as --otp.
   - Prefer 'login --api-key-stdin' or '--api-key-env <VAR>': a key passed as
     --api-key can linger in shell history. Same for secret values: prefer
     --value-stdin / --env-key over --value.
-  - Values are never printed except by 'get --reveal' (raw value on stdout).
-    Everywhere else only the server's masked preview is shown.
+  - Values are never printed except by 'get --reveal' and 'mint' (raw value/key
+    on stdout, nothing else on stdout). Everywhere else only the server's
+    masked preview is shown.
   - push upserts: creates, or updates the value (409 -> PATCH) if <name> exists.
   - push-env-file never prints values; it reports names + created/updated counts.
   - proxy injects the secret server-side; the secret never touches this machine.
@@ -432,6 +450,192 @@ async function cmdProxy(positionals, flags) {
   console.log(JSON.stringify({ status: res.status, headers: res.headers, body: res.body }, null, 2));
 }
 
+// ---------------------------------------------------------------------------
+// mint: email+password sign-in (session cookie in memory) -> POST /api/keys.
+// Bearer keys can never mint keys — the server requires a signed-in
+// session — so this is the only CLI path that speaks session cookies.
+// Password comes from stdin only (never argv, never stored); the raw key
+// is printed ONCE to stdout and, only with --save, written to the config.
+// ---------------------------------------------------------------------------
+
+function resolveMintBase(flags) {
+  if (flags.url !== undefined) {
+    const clean = String(flags.url).replace(/\/+$/, "");
+    if (!/^https?:\/\//i.test(clean)) usageFail("mint --url must be an http(s) site origin");
+    return clean;
+  }
+  try {
+    const cfg = JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
+    if (cfg.url) return String(cfg.url).replace(/\/+$/, "");
+  } catch {
+    // fall through to usage error
+  }
+  usageFail("mint needs --url <site> (or a saved login to reuse its site)");
+}
+
+function parseMintDays(raw) {
+  if (raw === undefined) return undefined;
+  const n = Number(String(raw));
+  if (!Number.isInteger(n) || n < 1 || n > 365) usageFail("--days must be an integer 1-365");
+  return n * 24 * 3600; // days -> seconds (server clamps into the same window)
+}
+
+function parseMintName(raw) {
+  if (raw === undefined) return undefined;
+  if (typeof raw === "boolean") usageFail("--name needs a value");
+  const name = String(raw).trim();
+  if (!name) usageFail("--name needs a value");
+  return name.slice(0, 64);
+}
+
+/** Error text from a better-auth/route payload without ever echoing secrets. */
+function errText(data, fallback) {
+  const e = data?.error;
+  if (typeof e === "string" && e) return e;
+  if (e && typeof e.message === "string" && e.message) return e.message;
+  if (typeof data?.message === "string" && data.message) return data.message;
+  return fallback;
+}
+
+function setCookiesOf(res) {
+  if (typeof res.headers.getSetCookie === "function") {
+    try {
+      const arr = res.headers.getSetCookie();
+      if (arr && arr.length) return arr;
+    } catch {
+      // fall through
+    }
+  }
+  const single = res.headers.get("set-cookie");
+  return single ? [single] : [];
+}
+
+function storeCookies(jar, res) {
+  for (const line of setCookiesOf(res)) {
+    const pair = String(line).split(";")[0];
+    const eq = pair.indexOf("=");
+    if (eq === -1) continue;
+    const name = pair.slice(0, eq).trim();
+    const value = pair.slice(eq + 1).trim();
+    if (!name) continue;
+    if (!value) jar.delete(name);
+    else jar.set(name, value);
+  }
+}
+
+function cookieHeader(jar) {
+  return [...jar].map(([k, v]) => `${k}=${v}`).join("; ");
+}
+
+// POST JSON with the in-memory session jar. Trailing-slash URLs are used
+// by callers (trailingSlash:true site 308-redirects slashless auth URLs);
+// redirect:follow still applies if one appears.
+async function mintPost(url, payload, jar) {
+  let res;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(jar.size ? { cookie: cookieHeader(jar) } : {}),
+      },
+      body: JSON.stringify(payload),
+      redirect: "follow",
+    });
+  } catch (e) {
+    fail(`request failed: ${e.message} (is the site URL correct?)`);
+  }
+  storeCookies(jar, res);
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    // non-JSON; handled below via !res.ok
+  }
+  return { res, data };
+}
+
+async function readMintPassword(flags) {
+  if (flags.password !== undefined) {
+    usageFail("password is never a CLI arg; pipe it via stdin (e.g. printf '%s' \"$PW\" | site-vault mint …).");
+  }
+  if (process.stdin.isTTY) {
+    fail("password must come from stdin (e.g. printf '%s' \"$PW\" | site-vault mint --email you@x.com …).");
+  }
+  const pw = await readStdin();
+  if (!pw) fail("empty password on stdin; nothing minted.");
+  return pw;
+}
+
+async function cmdMint(flags) {
+  const email = flags.email;
+  if (!email || typeof email === "boolean") {
+    usageFail("mint needs --email <addr> (password comes from stdin)");
+  }
+  const otp = flags.otp !== undefined ? String(flags.otp).trim() : undefined;
+  if (flags.otp !== undefined && !otp) usageFail("--otp needs a value");
+  const name = parseMintName(flags.name);
+  const expiresIn = parseMintDays(flags.days);
+  const save = flags.save !== undefined;
+  const base = resolveMintBase(flags);
+
+  const password = await readMintPassword(flags); // memory only: never logged, never stored
+  const jar = new Map();
+
+  // 1) Email+password sign-in; captures the session cookie in the jar.
+  const signIn = await mintPost(`${base}/api/auth/sign-in/email/`, { email: String(email).trim(), password }, jar);
+  if (!signIn.res.ok) {
+    fail(errText(signIn.data, `sign-in failed (HTTP ${signIn.res.status})`));
+  }
+
+  // 2) TOTP second step when the account has 2FA enabled: the server
+  // answers success with twoFactorRedirect instead of a session.
+  if (signIn.data?.twoFactorRedirect) {
+    if (!otp) {
+      console.error(
+        "site-vault: error: two-factor challenge: sign-in needs the six-digit authenticator code.\n" +
+          "Re-run with --otp <code> (password still via stdin)."
+      );
+      process.exit(2);
+    }
+    const second = await mintPost(
+      `${base}/api/auth/two-factor/verify-totp/`,
+      { code: otp, trustDevice: false },
+      jar
+    );
+    if (!second.res.ok) {
+      fail(errText(second.data, `two-factor verification failed (HTTP ${second.res.status})`));
+    }
+  } else if (otp) {
+    console.error("site-vault: warning: --otp ignored (account has no two-factor challenge).");
+  }
+
+  if (jar.size === 0) fail("sign-in gave no session cookie; cannot mint.");
+
+  // 3) Mint with the session cookie. Same-origin base throughout.
+  const body = {};
+  if (name !== undefined) body.name = name;
+  if (expiresIn !== undefined) body.expiresIn = expiresIn;
+  const minted = await mintPost(`${base}/api/keys/`, body, jar);
+  if (!minted.res.ok) {
+    fail(errText(minted.data, `mint failed (HTTP ${minted.res.status})`));
+  }
+  const raw =
+    (minted.data && typeof minted.data.key === "string" && minted.data.key) ||
+    (minted.data?.data && typeof minted.data.data.key === "string" && minted.data.data.key) ||
+    null;
+  if (!raw) fail("mint succeeded but the server returned no key value.");
+
+  if (save) {
+    saveConfig(base, raw);
+    console.error(`saved to ${CONFIG_PATH} (mode 600).`);
+  }
+  // Raw key on stdout ONLY (pipe-friendly); the save-it-now warning goes
+  // to stderr so stdout stays clean.
+  console.error("API key shown ONCE — save it now; it is never shown again.");
+  process.stdout.write(raw.endsWith("\n") ? raw : raw + "\n");
+}
+
 async function cmdDedupe(flags) {
   const cfg = loadConfig();
   const prune = flags.prune !== undefined;
@@ -492,6 +696,8 @@ async function main() {
       return cmdProxy(positionals, flags);
     case "dedupe":
       return cmdDedupe(flags);
+    case "mint":
+      return cmdMint(flags);
     default:
       usageFail(`unknown command "${cmd}"`);
   }

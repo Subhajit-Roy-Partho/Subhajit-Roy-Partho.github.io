@@ -264,6 +264,15 @@ export default function ApiBankPage() {
               or revoke keys. Keys do <em>not</em> trigger a two-factor challenge when they are used, so treat them like
               passwords. New keys expire after 90 days (1–365 days on request) and are usage-capped.
             </p>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">
+              The CLI can mint keys too: pipe your password to{" "}
+              <code>site-vault mint --email you@example.com</code> (add{" "}
+              <code>--otp &lt;code&gt;</code> for two-factor accounts,{" "}
+              <code>--save</code> to store the fresh key as this machine&apos;s
+              login). Like the /keys page it signs in with a session — Bearer
+              keys can&apos;t mint by design — and the raw key prints exactly
+              once. See <code>cli/README.md</code> for flags.
+            </p>
             <p className="mt-4 text-sm font-medium">
               <LiveLink path="/keys" className="text-[var(--foreground)] hover:text-[var(--accent)]">
                 {ENABLE_DB ? "Open API keys →" : "Open API keys on the main site"}
