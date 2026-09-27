@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { authClient } from "@/lib/auth-client";
 import {
   AccountHeader,
@@ -359,8 +360,22 @@ export function AuthForm({ mode }: { mode: Mode }) {
             ) : (
               <form onSubmit={confirmEnroll} className="space-y-4">
                 <p className={noteClass}>
-                  Add this account to your authenticator app by entering the
-                  secret below, then confirm with a 6-digit code.
+                  Scan this code with your authenticator app, then confirm
+                  with a 6-digit code.
+                </p>
+                <div className="flex justify-center">
+                  <div className="rounded-xl border border-[var(--border)] bg-white p-4">
+                    <QRCodeSVG
+                      value={totpURI}
+                      size={200}
+                      level="M"
+                      role="img"
+                      aria-label="Authenticator setup QR code"
+                    />
+                  </div>
+                </div>
+                <p className={noteClass}>
+                  Can&apos;t scan it? Enter the secret below manually instead.
                 </p>
                 {secret && (
                   <div>
