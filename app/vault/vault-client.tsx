@@ -18,6 +18,7 @@ import {
 type SecretMeta = {
   id: string;
   name: string;
+  description: string | null;
   allowedHosts: string[] | null;
   injectAs: string;
   preview: string;
@@ -38,6 +39,8 @@ type ExactGroupUI = {
   dropIds: string[];
   names: string[];
   preview: string;
+  descriptions?: (string | null)[];
+  descriptionsDiffer?: boolean;
 };
 
 type NearGroupUI = {
@@ -46,6 +49,7 @@ type NearGroupUI = {
   matchedOn: string[];
   suggestion: string;
   preview: string;
+  descriptions?: (string | null)[];
 };
 
 type DedupeResultUI = {
@@ -87,6 +91,7 @@ export function VaultClient() {
   // Create form
   const [cName, setCName] = useState("");
   const [cValue, setCValue] = useState("");
+  const [cDesc, setCDesc] = useState("");
   const [cHosts, setCHosts] = useState("");
   const [cInject, setCInject] = useState<"header" | "body">("header");
   const [creating, setCreating] = useState(false);
@@ -98,6 +103,7 @@ export function VaultClient() {
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [eName, setEName] = useState("");
+  const [eDesc, setEDesc] = useState("");
   const [eValue, setEValue] = useState("");
   const [eHosts, setEHosts] = useState("");
   const [eInject, setEInject] = useState<"header" | "body">("header");
@@ -154,6 +160,7 @@ export function VaultClient() {
         body: JSON.stringify({
           name: cName.trim(),
           value: cValue,
+          description: cDesc.trim() ? cDesc.trim().slice(0, 500) : undefined,
           allowedHosts: inputToHosts(cHosts),
           injectAs: cInject,
         }),
@@ -162,6 +169,7 @@ export function VaultClient() {
       if (!res.ok) throw new Error(json.error ?? "Create failed.");
       setCName("");
       setCValue("");
+      setCDesc("");
       setCHosts("");
       setCInject("header");
       await load();
@@ -210,6 +218,7 @@ export function VaultClient() {
   function startEdit(s: SecretMeta) {
     setEditingId(s.id);
     setEName(s.name);
+    setEDesc(s.description ?? "");
     setEValue("");
     setEHosts(hostsToInput(s.allowedHosts));
     setEInject(s.injectAs === "body" ? "body" : "header");
@@ -223,6 +232,7 @@ export function VaultClient() {
     try {
       const patch: Record<string, unknown> = {
         name: eName.trim(),
+        description: eDesc.trim() ? eDesc.trim().slice(0, 500) : null,
         allowedHosts: inputToHosts(eHosts),
         injectAs: eInject,
       };
@@ -386,6 +396,11 @@ export function VaultClient() {
                       <p className="text-sm font-semibold">
                         Exact duplicate: {g.keepName}
                       </p>
+                      {g.descriptionsDiffer && (
+                        <p className={`${noteClass} mt-1`}>
+                          Same credentials — notes differ but that doesn&apos;t break the match.
+                        </p>
+                      )}
                       <p className="mt-1 font-mono text-xs text-[var(--muted)]">
                         keep {g.keepId} · drop {g.dropIds.length} · preview:{" "}
                         {g.preview}
@@ -415,6 +430,11 @@ export function VaultClient() {
                           </span>
                         ))}
                       </div>
+                      {g.descriptions?.some(Boolean) && (
+                        <p className={`${noteClass} mt-2`}>
+                          Notes: {g.descriptions.filter(Boolean).join(" · ")}
+                        </p>
+                      )}
                       <p className={`${noteClass} mt-2`}>
                         {g.suggestion} Merge manually with Edit/Delete — these
                         are never auto-deleted.
@@ -453,6 +473,19 @@ export function VaultClient() {
                   value={cValue}
                   onChange={(e) => setCValue(e.target.value)}
                   placeholder="sk_test_…"
+                />
+              </div>
+              <div>
+                <label className={labelClass} htmlFor="vault-desc">
+                  Description <span className="normal-case tracking-normal">(optional, what this key is for — max 500 chars)</span>
+                </label>
+                <input
+                  id="vault-desc"
+                  className={fieldClass}
+                  value={cDesc}
+                  maxLength={500}
+                  onChange={(e) => setCDesc(e.target.value)}
+                  placeholder="e.g. Stripe test key for checkout demo"
                 />
               </div>
               <div>
@@ -506,6 +539,9 @@ export function VaultClient() {
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <h3 className="font-display text-base font-semibold">{s.name}</h3>
+                      {s.description && (
+                        <p className="mt-1 text-sm text-[var(--muted)]">{s.description}</p>
+                      )}
                       <p className="mt-1 font-mono text-xs text-[var(--muted)]">
                         preview: {s.preview}
                       </p>
@@ -579,6 +615,16 @@ export function VaultClient() {
                             <option value="body">JSON body field</option>
                           </select>
                         </div>
+                      </div>
+                      <div>
+                        <label className={labelClass}>Description (optional)</label>
+                        <input
+                          className={fieldClass}
+                          value={eDesc}
+                          maxLength={500}
+                          onChange={(e) => setEDesc(e.target.value)}
+                          placeholder="What this key is for"
+                        />
                       </div>
                       <div>
                         <label className={labelClass}>

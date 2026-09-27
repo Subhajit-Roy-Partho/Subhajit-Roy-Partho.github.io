@@ -1,0 +1,1 @@
+ALTER TABLE `vault_secrets` ADD `description` text;

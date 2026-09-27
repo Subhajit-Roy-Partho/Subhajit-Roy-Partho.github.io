@@ -13,6 +13,7 @@ import { decryptSecret } from "@/lib/server/vault-crypto";
 export type DedupeInput = {
   id: string;
   name: string;
+  description: string | null;
   allowedHostsJson: string | null;
   injectAs: string;
   ciphertext: string;
@@ -26,6 +27,10 @@ export type ExactGroup = {
   /** Names of the dropped rows (same as keepName for exact dupes). */
   names: string[];
   preview: string;
+  /** Plaintext notes per row (aligned with [keep, ...drops]); EXACT matching
+   * ignores description — same credentials are a dupe even if notes differ. */
+  descriptions: (string | null)[];
+  descriptionsDiffer: boolean;
 };
 
 export type NearGroup = {
@@ -34,6 +39,8 @@ export type NearGroup = {
   matchedOn: string[];
   suggestion: string;
   preview: string;
+  /** Plaintext notes per row (aligned with ids). */
+  descriptions: (string | null)[];
 };
 
 export type DedupeResult = {
@@ -122,6 +129,8 @@ export function findDuplicates(secrets: DedupeInput[]): DedupeResult {
       dropIds: drops.map((d) => d.id),
       names: drops.map((d) => d.name),
       preview: MASKED,
+      descriptions: sorted.map((r) => r.description ?? null),
+      descriptionsDiffer: new Set(sorted.map((r) => r.description ?? "")).size > 1,
     });
     for (const r of g) exactIds.add(r.id);
   }
@@ -158,6 +167,7 @@ export function findDuplicates(secrets: DedupeInput[]): DedupeResult {
       matchedOn: ["value", ...diff],
       suggestion: `Same value in ${sorted.length} secrets — keep "${keep.name}" (${keep.id}) and merge manually via PATCH/DELETE; near-dupes are never auto-deleted.`,
       preview: MASKED,
+      descriptions: sorted.map((r) => r.description ?? null),
     });
     emittedNear.add(g[0].valueHash);
   }
@@ -185,6 +195,7 @@ export function findDuplicates(secrets: DedupeInput[]): DedupeResult {
       matchedOn: ["name", ...diff],
       suggestion: `Same name "${name}" with different content — keep "${keep.name}" (${keep.id}) and merge manually via PATCH/DELETE; near-dupes are never auto-deleted.`,
       preview: MASKED,
+      descriptions: sorted.map((r) => r.description ?? null),
     });
   }
 

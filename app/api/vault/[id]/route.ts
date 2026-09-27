@@ -29,6 +29,7 @@ function meta(r: NonNullable<Awaited<ReturnType<typeof owned>>>) {
   return {
     id: r.id,
     name: r.name,
+    description: r.description ?? null,
     allowedHosts: r.allowedHostsJson ? JSON.parse(r.allowedHostsJson) : null,
     injectAs: r.injectAs,
     preview: maskPreview(r.ciphertext),
@@ -64,7 +65,7 @@ export async function GET(
   return Response.json(meta(row));
 }
 
-// PATCH /api/vault/:id — { name?, value?, allowedHosts?, injectAs? }.
+// PATCH /api/vault/:id — { name?, value?, allowedHosts?, injectAs?, description? }.
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -120,6 +121,22 @@ export async function PATCH(
   }
   if (body.injectAs !== undefined) {
     patch.injectAs = body.injectAs === "body" ? "body" : "header";
+  }
+  if (body.description !== undefined) {
+    // Optional plaintext note (NOT the secret value): trim, 500-char cap,
+    // empty string clears back to null.
+    if (body.description !== null && typeof body.description !== "string") {
+      return Response.json({ error: "bad description" }, { status: 400 });
+    }
+    const trimmed =
+      typeof body.description === "string" ? body.description.trim() : "";
+    if (trimmed.length > 500) {
+      return Response.json(
+        { error: "description too long (max 500 chars)" },
+        { status: 400 }
+      );
+    }
+    patch.description = trimmed ? trimmed : null;
   }
   if (Object.keys(patch).length === 0) {
     return Response.json({ error: "empty patch" }, { status: 400 });

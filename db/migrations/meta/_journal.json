@@ -15,6 +15,13 @@
       "when": 1790399224082,
       "tag": "0001_deep_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790467884904,
+      "tag": "0002_add-vault-description",
+      "breakpoints": true
     }
   ]
 }

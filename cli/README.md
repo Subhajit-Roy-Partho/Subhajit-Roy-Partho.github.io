@@ -47,6 +47,7 @@ site-vault get OPENAI_API_KEY --reveal   # raw value on stdout
 printf '%s' "$OPENAI_API_KEY" | site-vault push OPENAI_API_KEY --value-stdin --hosts api.openai.com
 site-vault push STRIPE_KEY --env-key STRIPE_SECRET --inject header
 site-vault push FLAG --value dev-only   # prefer stdin/env; --value can linger in history
+site-vault push OPENAI_API_KEY --value-stdin --description "OpenAI key for completions demo"  # optional note (max 500 chars), shown by get
 
 # delete
 site-vault delete OLD_KEY

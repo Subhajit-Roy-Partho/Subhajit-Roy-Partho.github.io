@@ -166,11 +166,20 @@ async function resolveValue(flags) {
   return v;
 }
 
+function parseDescription(raw) {
+  if (raw === undefined) return undefined;
+  if (typeof raw === "boolean") usageFail("--description needs a value");
+  const trimmed = String(raw).trim();
+  if (trimmed.length > 500) fail("description too long (max 500 chars).");
+  return trimmed ? trimmed : null;
+}
+
 /** Upsert one secret by name: POST, falling back to PATCH on 409. Never logs the value. */
-async function upsert(cfg, name, value, { allowedHosts, injectAs } = {}) {
+async function upsert(cfg, name, value, { allowedHosts, injectAs, description } = {}) {
   const payload = { name, value };
   if (allowedHosts !== undefined) payload.allowedHosts = allowedHosts;
   if (injectAs !== undefined) payload.injectAs = injectAs;
+  if (description !== undefined && description !== null) payload.description = description;
 
   let res;
   try {
@@ -187,6 +196,7 @@ async function upsert(cfg, name, value, { allowedHosts, injectAs } = {}) {
     const patch = { value };
     if (allowedHosts !== undefined) patch.allowedHosts = allowedHosts;
     if (injectAs !== undefined) patch.injectAs = injectAs;
+    if (description !== undefined) patch.description = description;
     await api(cfg, `/api/vault/${existing.id}`, { method: "PATCH", body: patch });
     return "updated";
   }
@@ -237,8 +247,9 @@ Usage:
   site-vault list
   site-vault get <name> [--reveal]
   site-vault push <name> (--value <v> | --value-stdin | --env-key <KEY>)
-                        [--hosts h1,h2] [--inject header|body]
+                        [--hosts h1,h2] [--inject header|body] [--description "..."]
   site-vault push-env-file <path> [--prefix <P>] [--allowlist K1,K2 | --all]
+                         [--description "..." (applied to all)]
   site-vault delete <name>
   site-vault proxy <name> --url <target> [--method <M>] [--body-json '<json>']
   site-vault dedupe [--prune]
@@ -328,6 +339,7 @@ async function cmdGet(positionals, flags) {
       {
         id: hit.id,
         name: hit.name,
+        description: hit.description ?? null,
         allowedHosts: hit.allowedHosts,
         injectAs: hit.injectAs,
         preview: hit.preview,
@@ -350,6 +362,7 @@ async function cmdPush(positionals, flags) {
   const result = await upsert(cfg, name, value, {
     allowedHosts: parseHosts(flags.hosts),
     injectAs: parseInject(flags.inject),
+    description: parseDescription(flags.description),
   });
   console.log(`${result} "${name}"`);
 }
@@ -384,10 +397,11 @@ async function cmdPushEnvFile(positionals, flags) {
   const cfg = loadConfig();
   const allowedHosts = parseHosts(flags.hosts);
   const injectAs = parseInject(flags.inject);
+  const description = parseDescription(flags.description);
   let created = 0;
   let updated = 0;
   for (const e of entries) {
-    const r = await upsert(cfg, e.key, e.value, { allowedHosts, injectAs });
+    const r = await upsert(cfg, e.key, e.value, { allowedHosts, injectAs, description });
     if (r === "created") created++;
     else updated++;
     console.log(`${r} "${e.key}"`);
@@ -431,7 +445,8 @@ async function cmdDedupe(flags) {
     console.log("no exact duplicates.");
   } else {
     for (const g of exact) {
-      console.log(`exact: keep "${g.keepName}" (${g.keepId}) drop ${g.dropIds.length}: ${g.dropIds.join(", ")}`);
+      const note = g.descriptionsDiffer ? " (notes differ, still exact — description is ignored for matching)" : "";
+      console.log(`exact: keep "${g.keepName}" (${g.keepId}) drop ${g.dropIds.length}: ${g.dropIds.join(", ")}${note}`);
     }
   }
   if (prune) {
@@ -442,8 +457,9 @@ async function cmdDedupe(flags) {
     return;
   }
   for (const g of near) {
+    const desc = (g.descriptions ?? []).filter(Boolean).join(" · ");
     console.error(
-      `near: ${(g.names ?? []).join(", ")} matched-on [${(g.matchedOn ?? []).join(", ")}] — ${g.suggestion ?? "merge manually via site PATCH/DELETE; never auto-deleted."}`
+      `near: ${(g.names ?? []).join(", ")} matched-on [${(g.matchedOn ?? []).join(", ")}]${desc ? ` notes: ${desc}` : ""} — ${g.suggestion ?? "merge manually via site PATCH/DELETE; never auto-deleted."}`
     );
   }
 }

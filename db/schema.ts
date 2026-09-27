@@ -136,6 +136,8 @@ export const vaultSecrets = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
+    // Optional plaintext note describing what the key is for — NOT the secret value.
+    description: text("description"),
     // JSON array of exact-match allowed hosts (max 10), null = proxy disabled.
     allowedHostsJson: text("allowed_hosts_json"),
     // e.g. "header" | "body" — hint for the designer-owned UI.

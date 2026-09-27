@@ -30,6 +30,7 @@ export async function GET(req: Request) {
     secrets: rows.map((r) => ({
       id: r.id,
       name: r.name,
+      description: r.description ?? null,
       allowedHosts: r.allowedHostsJson ? JSON.parse(r.allowedHostsJson) : null,
       injectAs: r.injectAs,
       preview: maskPreview(r.ciphertext),
@@ -55,11 +56,12 @@ export async function POST(req: Request) {
     }
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
-  const { name, value, allowedHosts, injectAs } = body as {
+  const { name, value, allowedHosts, injectAs, description } = body as {
     name?: unknown;
     value?: unknown;
     allowedHosts?: unknown;
     injectAs?: unknown;
+    description?: unknown;
   };
   if (typeof name !== "string" || !name.trim()) {
     return Response.json({ error: "name required" }, { status: 400 });
@@ -80,6 +82,21 @@ export async function POST(req: Request) {
     );
   }
   const inject = injectAs === "body" ? "body" : "header";
+  // Optional plaintext note describing what the key is for (NOT the value).
+  let desc: string | null = null;
+  if (description !== undefined && description !== null) {
+    if (typeof description !== "string") {
+      return Response.json({ error: "bad description" }, { status: 400 });
+    }
+    const trimmed = description.trim();
+    if (trimmed.length > 500) {
+      return Response.json(
+        { error: "description too long (max 500 chars)" },
+        { status: 400 }
+      );
+    }
+    desc = trimmed ? trimmed : null;
+  }
 
   // Enforce unique(userId, name).
   const existing = await db
@@ -98,6 +115,7 @@ export async function POST(req: Request) {
     id,
     userId,
     name: name.trim(),
+    description: desc,
     allowedHostsJson: hosts ? JSON.stringify(hosts) : null,
     injectAs: inject,
     ciphertext,

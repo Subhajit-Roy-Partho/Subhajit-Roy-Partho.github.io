@@ -205,6 +205,10 @@ export default function ApiBankPage() {
                 <strong className="text-[var(--foreground)]">Inject as</strong> — <code>header</code> sends an
                 Authorization Bearer header, <code>body</code> adds the secret to a JSON body field instead.
               </li>
+              <li>
+                <strong className="text-[var(--foreground)]">Description</strong> — optional plaintext note saying
+                what the key is for (never the value itself, max 500 chars).
+              </li>
             </ul>
           </div>
           <div className="card-surface p-5">
