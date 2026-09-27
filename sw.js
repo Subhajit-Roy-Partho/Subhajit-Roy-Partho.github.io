@@ -4,14 +4,14 @@
      URLs, so a cached copy can never be stale)
    - navigations      → network-first with forced revalidation; the fresh page
      refreshes the cache; the cached page serves only when offline
-   - other same-origin (images, fonts, icons, misc) → same network-first +
+   - other same-origin (icons, models, misc) → same network-first +
      refresh-cache + offline-fallback treatment
    - cross-origin (Google Analytics, etc.) → never touched
    `cache: "no-cache"` on the fetch forces a conditional revalidation with the
    server instead of trusting the HTTP cache, so an update always wins; an
    unchanged response comes back as a tiny 304 round-trip, not a download.
 */
-const VERSION = "v2";
+const VERSION = "v3";
 const STATIC_CACHE = `static-${VERSION}`;
 const PAGES_CACHE = `pages-${VERSION}`;
 const ASSETS_CACHE = `assets-${VERSION}`;
@@ -75,7 +75,23 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Images, fonts, icons, and everything else same-origin: fresh copy wins,
+  // Same-origin images and fonts are content-addressed in practice (a changed
+  // asset ships under a new hashed file or path), so cache-first is safe and
+  // keeps hero art and webfonts off the network on repeat visits.
+  // NOTE: GitHub Pages cannot set Cache-Control headers, so PageSpeed's
+  // "cache lifetimes" audit can't go fully green from headers alone — this
+  // runtime cache is the Pages-compatible substitute, while HTML below stays
+  // network-first so deploys take effect immediately.
+  if (
+    request.destination === "image" ||
+    request.destination === "font" ||
+    /\.(png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf)$/i.test(url.pathname)
+  ) {
+    event.respondWith(cacheFirst(request, ASSETS_CACHE));
+    return;
+  }
+
+  // Everything else same-origin: fresh copy wins,
   // cache refreshes behind it, cached copy covers offline.
   event.respondWith(networkFirst(request, ASSETS_CACHE, () => Response.error()));
 });
