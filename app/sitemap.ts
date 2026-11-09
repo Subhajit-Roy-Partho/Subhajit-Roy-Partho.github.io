@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/research",
     "/publications",
     "/cv",
+    "/recruiters",
     "/blog",
     "/extras",
     "/extras/electrostatic-simulator",

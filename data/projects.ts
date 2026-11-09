@@ -28,7 +28,7 @@ export const projects: Project[] = [
       "A coarse-grained molecular dynamics engine for DNA and RNA — the workhorse that lets the field prototype nanostructures computationally before ever touching a pipette.",
     tags: ["C++", "CUDA", "Python", "Force fields"],
     category: "simulation",
-    status: "Actively maintained · core developer",
+    status: "Actively maintained · developer",
     featured: true,
     liveLink: { label: "Run it at oxdna.org", href: "https://oxdna.org" },
     repoLink: { label: "Source on GitHub", href: "https://github.com/lorenzo-rovigatti/oxDNA" },
@@ -50,7 +50,7 @@ export const projects: Project[] = [
       {
         heading: "What I built",
         body: [
-          "As a core developer, my work has focused on making oxDNA fast and correct at scales the original codebase wasn't built for: implementing non-singular mass support, bringing the CUDA backend up to modern GPU architectures, and optimizing the build for ARM (both aarch64 servers and Apple Silicon).",
+          "As a developer, my work has focused on making oxDNA fast and correct at scales the original codebase wasn't built for: bringing the CUDA backend up to modern GPU architectures, optimizing the build for ARM (merged upstream), and a Metal GPU backend for Apple Silicon on a separate branch.",
           "On the modeling side, I built a custom CUDA-optimized path that scales simulations up to roughly 6 million particles, and developed a new coarse-grained force field for irregular origami shapes using rigid-body physics and patchy particles — about 1000× faster than the standard oxDNA2 model for that class of structure. I also extended the patchy-particle force field used for DNA-mediated crystal growth, which fed directly into an experimental result: simulation-guided design that raised the crystal growth temperature by 12°C with a higher yield.",
         ],
       },
@@ -70,7 +70,7 @@ export const projects: Project[] = [
       "An in-browser viewer and editor for oxDNA/oxRNA structures — load a design, watch a trajectory play back, edit strands by hand, and even drive a live simulation without leaving the tab.",
     tags: ["Three.js", "TypeScript", "WebSockets"],
     category: "simulation",
-    status: "Live · core developer",
+    status: "Live · developer",
     featured: true,
     liveLink: { label: "Open oxView.org", href: "https://oxview.org" },
     repoLink: { label: "Source on GitHub", href: "https://github.com/sulcgroup/oxdna-viewer" },
@@ -158,7 +158,7 @@ export const projects: Project[] = [
     tagline: "Skip the simulation, keep the physics",
     description:
       "A flow-matching generative model that predicts equilibrium 3D DNA/RNA structure directly from sequence — trading a slow simulation for a fast forward pass.",
-    tags: ["PyTorch", "Flow matching", "SE(3)-equivariance", "Clifford algebra"],
+    tags: ["PyTorch", "JAX (TPU)", "Flow matching", "SE(3)-equivariance", "Clifford algebra"],
     category: "ml",
     status: "Research prototype",
     featured: true,
@@ -183,8 +183,8 @@ export const projects: Project[] = [
     name: "NanoCanvas",
     tagline: "Design DNA origami by describing it, not clicking through it",
     description:
-      "A cadnano2-inspired origami design tool with a full agent API — so an LLM (or a script) can drive structural design programmatically, not just a human with a mouse.",
-    tags: ["FastAPI", "React", "Three.js", "Model Context Protocol"],
+      "A browser-based, cadnano2-inspired origami design tool driven by a multi-agent LLM pipeline — describe a structure, and the agents write, validate and verify the design against oxDNA.",
+    tags: ["React", "Three.js", "LLM agents", "oxDNA"],
     category: "ml",
     status: "Research prototype",
     featured: true,
@@ -198,8 +198,8 @@ export const projects: Project[] = [
       {
         heading: "What I built",
         body: [
-          "NanoCanvas reimplements the cadnano2 design workflow with a modern stack — FastAPI backend, React front end, Three.js 3D view — but the key addition is a full REST API exposed via the Model Context Protocol (MCP), so an LLM agent can create, route, and modify a design programmatically with the same expressiveness a human has in the GUI.",
-          "That turns origami design into something an agent can iterate on: propose a routing, check it against design rules, adjust, and repeat — all without a human in the loop for every step.",
+          "NanoCanvas reimplements the cadnano2 design workflow as a frontend-only web app (React, Three.js) with in-browser conversion to oxDNA and an embedded oxView viewer. A multi-agent LLM pipeline — planner, coder, reviewer, debugger — writes and executes code against a domain API, with geometry validation (a primitive allowlist and mesh-validator gates) and oxDNA verification of every generated design. It was tested on hundreds of randomly generated structures, which also serve as training data for fastDNA.",
+          "That turns origami design into something an agent can iterate on: propose a design, check it against geometric rules, verify it in oxDNA, adjust, and repeat.",
         ],
       },
     ],
@@ -301,6 +301,55 @@ export const projects: Project[] = [
         heading: "Why it matters",
         body: [
           "Minimizing the block count isn't just an efficiency detail — every additional distinct block is another opportunity for the system to misfold, so finding the truly minimal rule set is what makes complex, reliable 3D self-assembly practical rather than theoretical.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "rigiddna",
+    name: "rigidDNA2 / rigidRNA",
+    tagline: "From an origami design to a simulation-ready structure in seconds",
+    description:
+      "Native C++ pipelines that turn caDNAno, scadnano or oxDNA designs (and, for RNA, secondary-structure layouts) into nucleotide-resolution starting configurations for oxDNA/oxRNA.",
+    tags: ["C++", "CUDA", "SE(3) rigid bodies", "Sparse least squares", "WebAssembly"],
+    category: "simulation",
+    status: "In preparation · validation ongoing · documentation public",
+    featured: false,
+    liveLink: { label: "rigidDNA2 documentation", href: "https://subhajit-roy-partho.github.io/rigidDNA/rigidDNA2/" },
+    story: [
+      {
+        heading: "The problem",
+        body: [
+          "A DNA origami design is a 2D routing diagram; a simulation needs every nucleotide placed in 3D without steric clashes. Getting from one to the other is slow, fragile, and often the step where a design first breaks.",
+        ],
+      },
+      {
+        heading: "What I built",
+        body: [
+          "rigidDNA2 models each base pair as an SE(3) rigid-body pose on a graph of base pairs, crossovers and single-strand runs, selects a layout automatically (lattice bundles, rings and barrels, wireframes, articulated substructures), minimizes an oxDNA-derived reduced energy with block-sparse Levenberg–Marquardt and sparse Cholesky solvers, reconstructs nucleotides from calibrated templates, and finishes with native oxDNA2 relaxation. It runs as a single command, has a WebAssembly build and a web structure server, and runs automated geometric validity checks.",
+          "rigidRNA extends the same framework to RNA: it builds an elastic base-pair graph, places and relaxes stems, supports de novo 3D layout of RNA origami and pseudoknot-rich structures, and reconstructs nucleotides for oxRNA2 validation.",
+          "On a curated set of 283 DNA origami structures, 282 pass strict geometric checks, with a median preparation time of 11.2 s per structure; results are benchmarked against SNUPI. This work is still in the writing and validation phase, so treat the numbers as preliminary until the paper is out.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "plas5k",
+    name: "PLAS-5k",
+    tagline: "A protein–ligand affinity dataset built for machine learning",
+    description:
+      "5,000 protein–ligand complexes with binding affinities and interaction-energy components computed from molecular dynamics, released as a benchmark for ML affinity prediction.",
+    tags: ["OpenMM", "MM/PBSA", "RDKit", "MDAnalysis", "CNN"],
+    category: "ml",
+    status: "Published · Scientific Data 2022",
+    featured: false,
+    publicationIds: ["korlepara-plas5k-2022"],
+    story: [
+      {
+        heading: "What it is",
+        body: [
+          "PLAS-5k pairs 5,000 protein–ligand complexes with binding affinities and the polar, non-polar, electrostatic and van der Waals contributions computed from MD trajectories, so models can learn from physics-based labels instead of only from experimental assays.",
+          "It grew out of my Master's thesis at IIIT Hyderabad. A CNN of the OnionNet type trained on the dataset reached a Pearson correlation of 0.96 in 10-fold cross-validation, and the docking results outperformed commonly used tools such as AutoDock Vina.",
         ],
       },
     ],

@@ -33,7 +33,7 @@ export const education: Education[] = [
   {
     degree: "Physics, PhD",
     institution: "Petr Šulc's Lab, Arizona State University",
-    period: "August 2022 – Spring 2027",
+    period: "August 2022 – 2027 (expected)",
     detail: "Computational design and analysis of genetic materials, focusing on DNA origami self-assembly.",
     extra: "CGPA 3.94 / 4.00",
   },
@@ -63,13 +63,13 @@ export const experience: ResearchRole[] = [
   {
     title: "PhD Research",
     institution: "Arizona State University",
-    period: "August 2022 – Spring 2027",
+    period: "August 2022 – 2027 (expected)",
     advisor: "Prof. Petr Šulc",
     categories: [
       {
         heading: "Machine Learning & AI Development",
         skills:
-          "PyTorch, TensorFlow, LangChain, CuPy, Transformers, GCNN, Boltzmann Machines, Clustering, Molecular embedding, OpenCV",
+          "PyTorch, JAX (TPU), TensorFlow, LangChain, CuPy, Transformers, GCNN, Boltzmann Machines, Clustering, Molecular embedding, OpenCV",
         bullets: [
           "Created a Scalable Interpolant Transformer with SE(3)-invariant coordinates to generate equilibrated 3D conformations of DNA/RNA from sequence inputs, achieving atomic-level structural accuracy.",
           "Extended the transformer architecture to produce relaxed 3D DNA origami structures from line diagrams, enabling biophysics-informed design of complex nanostructures.",
@@ -80,16 +80,17 @@ export const experience: ResearchRole[] = [
           "Developed an LLM-based autograder using LangChain for ASU Physics experimental coursework, reducing grading time by 60% while improving feedback consistency.",
           "Built fastDNA: a flow-matching generative model (SE(3)-equivariant transformer, Clifford geometric algebra attention) for generating equilibrium 3D DNA/RNA conformations; trained on HPC with PyTorch Lightning and Weights & Biases; model sizes 2M–70M parameters.",
           "Developed PhysicsGrader / Graviton: a production LLM grading system (LangChain, Next.js, Canvas LMS API) serving 395 students across 10 lab courses; implemented hallucination/factuality checks, RBAC, MFA, and data encryption (ASU compliance).",
-          "Built NanoCanvas: a cadnano2-inspired DNA origami design tool with a full LLM agent REST API (FastAPI, React, Three.js) enabling programmatic structural design via Model Context Protocol (MCP).",
+          "Built NanoCanvas: a browser-based, frontend-only DNA origami design tool (React, Three.js; in-browser conversion to oxDNA, embedded oxView viewer) with a multi-agent LLM pipeline (planner, coder, reviewer, debugger) that writes and runs code against a domain API, with geometry validation and oxDNA verification of generated designs.",
+          "Used JAX to optimize fastDNA for TPUs (research prototype).",
           "Developed RAG-backed retrieval pipelines using LangChain, FAISS vector database, and Hugging Face embeddings for domain-specific scientific document search and context-aware LLM responses.",
         ],
       },
       {
         heading: "Molecular Simulation & Force Field Development",
         skills:
-          "Developer of oxDNA and oxView, AMBER MD, GROMACS, OpenMM, C++, CUDA, Force field development, Cython",
+          "Developer of oxDNA and oxView, AMBER MD, GROMACS, OpenMM, RDKit, MDAnalysis, MOE, Rosetta, umbrella sampling, REMD, MM/PBSA, MM/GBSA, C++, CUDA, Force field development, Cython",
         bullets: [
-          "Active core developer of oxDNA and oxView: implemented non-singular mass support, modern GPU compatibility (CUDA), and ARM architecture optimization.",
+          "Developer of oxDNA and oxView: modern GPU compatibility (CUDA), ARM architecture optimization (merged upstream), and a Metal GPU backend (separate branch); several pull requests open.",
           "Co-developed algorithms for inverse design of 3D polycube architectures, determining minimal building block sets and interaction rules for target geometries.",
           "Built custom CUDA-optimized code to simulate unprecedented system sizes, scaling molecular dynamics simulations to ~6 million particles.",
           "Formulated protein-DNA hybrid system (PROTAC) denaturation pathways using quantum-classical all-atom simulations for targeted protein degradation.",

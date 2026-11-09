@@ -28,6 +28,7 @@ const LINKS = [
   { href: "/research", label: "Research" },
   { href: "/publications", label: "Publications" },
   { href: "/cv", label: "CV" },
+  { href: "/recruiters", label: "Recruiters" },
   { href: "/blog", label: "Blog" },
   { href: "/extras", label: "Extras" },
 ];
