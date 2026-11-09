@@ -307,7 +307,7 @@ export const projects: Project[] = [
   },
   {
     id: "rigiddna",
-    name: "rigidDNA2 / rigidRNA",
+    name: "rigidDNA2 / rigidRNA2",
     tagline: "From an origami design to a simulation-ready structure in seconds",
     description:
       "Native C++ pipelines that turn caDNAno, scadnano or oxDNA designs (and, for RNA, secondary-structure layouts) into nucleotide-resolution starting configurations for oxDNA/oxRNA.",
@@ -316,6 +316,7 @@ export const projects: Project[] = [
     status: "In preparation · validation ongoing · documentation public",
     featured: false,
     liveLink: { label: "rigidDNA2 documentation", href: "https://subhajit-roy-partho.github.io/rigidDNA/rigidDNA2/" },
+    repoLink: { label: "rigidRNA2 documentation", href: "https://subhajit-roy-partho.github.io/rigidDNA/rigidRNA2/" },
     story: [
       {
         heading: "The problem",
@@ -327,8 +328,8 @@ export const projects: Project[] = [
         heading: "What I built",
         body: [
           "rigidDNA2 models each base pair as an SE(3) rigid-body pose on a graph of base pairs, crossovers and single-strand runs, selects a layout automatically (lattice bundles, rings and barrels, wireframes, articulated substructures), minimizes an oxDNA-derived reduced energy with block-sparse Levenberg–Marquardt and sparse Cholesky solvers, reconstructs nucleotides from calibrated templates, and finishes with native oxDNA2 relaxation. It runs as a single command, has a WebAssembly build and a web structure server, and runs automated geometric validity checks.",
-          "rigidRNA extends the same framework to RNA: it builds an elastic base-pair graph, places and relaxes stems, supports de novo 3D layout of RNA origami and pseudoknot-rich structures, and reconstructs nucleotides for oxRNA2 validation.",
-          "On a curated set of 283 DNA origami structures, 282 pass strict geometric checks, with a median preparation time of 11.2 s per structure; results are benchmarked against SNUPI. This work is still in the writing and validation phase, so treat the numbers as preliminary until the paper is out.",
+          "rigidRNA2 is the RNA side: an RNA 3D builder (rigid base-pair graph, de novo layout, short oxRNA2 relaxation) plus sequence-only prediction of secondary structure, kissing loops and pseudoknots, with every result labelled blind or fitted. It works well for designed RNAs with kissing loops and for RNA-origami start structures; the documentation is explicit that it does not recover natural experimental pseudoknots from sequence.",
+          "In the frozen curated DNA snapshot, 283 of 293 delivered structures are included and 282 of those pass strict geometric checks; the median wall time is 11.2 s per structure (274 outputs, four threads per job on a shared workstation). A passing geometric check does not establish that the intended fold was reached, and the method is compared with SNUPI in the documentation. This work is still in the writing and validation phase, so treat the numbers as preliminary until the paper is out.",
         ],
       },
     ],

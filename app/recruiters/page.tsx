@@ -33,7 +33,7 @@ const evidence = [
   { label: "oxDNA", note: "Coarse-grained MD engine", href: "/research/oxdna" },
   { label: "oxView", note: "Browser viewer/editor + LLM mode", href: "/research/oxview" },
   { label: "fastDNA", note: "Generative model for DNA/RNA 3D structure", href: "/research/fastdna" },
-  { label: "rigidDNA2 / rigidRNA", note: "Design → simulation-ready structure (in preparation)", href: "/research/rigiddna" },
+  { label: "rigidDNA2 / rigidRNA2", note: "Design → simulation-ready structure (in preparation)", href: "/research/rigiddna" },
   { label: "PLAS-5k", note: "Protein–ligand affinity dataset", href: "/research/plas5k" },
   { label: "NanoCanvas", note: "Multi-agent LLM origami design tool", href: "/research/nanocanvas" },
   { label: "Publications", note: "Papers, preprints and manuscripts", href: "/publications" },
@@ -123,7 +123,7 @@ export default function RecruitersPage() {
         <ul className="mt-6 max-w-2xl list-disc space-y-2 pl-5 text-sm text-[var(--muted)]">
           <li>Published: PLAS-5k (Scientific Data 2022), the DNA-templated PROTAC paper (JACS 2025), and the DNA-PAINT cryptography paper (Nature Communications 2025).</li>
           <li>Accepted or under review: the neuroscience review (Frontiers in Neural Circuits) and the OxView/oxCloud/nanobase paper (Nucleic Acids Research).</li>
-          <li>In preparation: fastDNA and rigidDNA2/rigidRNA. Numbers on their pages are preliminary until the papers are out.</li>
+          <li>In preparation: fastDNA and rigidDNA2/rigidRNA2. Numbers on their pages are preliminary until the papers are out.</li>
         </ul>
       </section>
     </div>
